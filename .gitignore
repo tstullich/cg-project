@@ -2,3 +2,4 @@
 *.raw
 cmake*
 .idea/
+.ipynb_checkpoints/
