@@ -82,14 +82,6 @@ public:
         }
     }
 
-    ~Histogram() {
-        std::cout << "Deleting histogram" << std::endl;
-        for (auto item : hist) {
-            std::cout << item << ", ";
-        }
-        std::cout << std::endl;
-    }
-
     float operator[](int idx) const { return hist[idx]; }
 
     int size() const { return hist.size(); }
@@ -98,7 +90,12 @@ private:
     // Calculate the color intensity/luminance value
     // Formula taken from https://www.mathworks.com/help/matlab/ref/rgb2gray.html
     int intensity(int r, int g, int b) {
-        return static_cast<int>(0.2989f * r + 0.5870f * g + 0.1140f * b);
+        auto i = static_cast<int>(0.2989f * r + 0.5870f * g + 0.1140f * b);
+        // Fix this for now since we are getting negative numbers for some reason
+        if (i < 0) {
+            i *= -1;
+        }
+        return i;
     }
 
     std::vector<float> hist;
@@ -173,7 +170,7 @@ int encode_rgb(unsigned char r, unsigned char g, unsigned char b) {
 C2C *load_dump(const char *filename) {
     std::ifstream dump(filename, std::ifstream::binary);
     dump.seekg(0, dump.end);
-    int num_floats = dump.tellg() / sizeof(float);
+    int num_floats = static_cast<int>(dump.tellg() / sizeof(float));
     dump.seekg(0, dump.beg);
     std::vector<float> buf(num_floats);
     dump.read(reinterpret_cast<char *>(buf.data()), buf.size() * sizeof(float));
@@ -232,7 +229,7 @@ void save_bitmap(BITMAP *bmp, const char *filename) {
    ------------------------------------------------------------------------- */
 
 int patch_w = 7;
-int pm_iters = 1;
+int pm_iters = 5;
 int rs_max = INT_MAX;
 
 #define XY_TO_INT(x, y) (((y)<<12)|(x))
@@ -277,7 +274,7 @@ std::vector<int> gather_samples(int x, int y, C2C *c2c) {
 }
 
 std::vector<int> gather_samples_bit(int x, int y, BITMAP *a) {
-    std::vector<int> samples;
+    auto samples = std::vector<int>();
     for (int dy = 0; dy < patch_w; dy++) {
         int *arow = &(*a)[y + dy][x];
         for (int dx = 0; dx < patch_w; dx++) {
@@ -446,6 +443,7 @@ void patchmatch(BITMAP *a, BITMAP *b, C2C *data, BITMAP *&ann, BITMAP *&annd) {
 
     for (int iter = 0; iter < pm_iters; iter++) {
         /* In each iteration, improve the NNF, by looping in scanline or reverse-scanline order. */
+        std::cout << "Round: " << iter << std::endl;
         int ystart = 0, yend = aeh, ychange = 1;
         int xstart = 0, xend = aew, xchange = 1;
         if (iter % 2 == 1) {
