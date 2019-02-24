@@ -293,6 +293,8 @@ Histogram create_hist(int x, int y, C2C *c2c) {
     return Histogram(gather_samples(x, y, c2c));
 }
 
+// Calculates the angle between corresponding intensity values of two histograms
+// then normalizes the value to be between 0 and 1
 float scalar_product(const Histogram &hist_a, const Histogram &hist_b) {
     float product = 0.0f;
     for (unsigned int i = 0; i < hist_a.size(); i++) {
