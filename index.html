@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html class="no-js">
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Patchmatch Applied To PBR</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link href="index_files/css.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="index_files/style.css">
+    <script src="index_files/MathJax.js" id=""></script>
+    <style type="text/css">
+        .MathJax_Hover_Frame {
+            border-radius: .25em;
+            -webkit-border-radius: .25em;
+            -moz-border-radius: .25em;
+            -khtml-border-radius: .25em;
+            box-shadow: 0px 0px 15px #83A;
+            -webkit-box-shadow: 0px 0px 15px #83A;
+            -moz-box-shadow: 0px 0px 15px #83A;
+            -khtml-box-shadow: 0px 0px 15px #83A;
+            border: 1px solid #A6D ! important;
+            display: inline-block;
+            position: absolute
+        }
+
+        .MathJax_Menu_Button .MathJax_Hover_Arrow {
+            position: absolute;
+            cursor: pointer;
+            display: inline-block;
+            border: 2px solid #AAA;
+            border-radius: 4px;
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            -khtml-border-radius: 4px;
+            font-family: 'Courier New', Courier;
+            font-size: 9px;
+            color: #F0F0F0
+        }
+
+        .MathJax_Menu_Button .MathJax_Hover_Arrow span {
+            display: block;
+            background-color: #AAA;
+            border: 1px solid;
+            border-radius: 3px;
+            line-height: 0;
+            padding: 4px
+        }
+
+        .MathJax_Hover_Arrow:hover {
+            color: white !important;
+            border: 2px solid #CCC !important
+        }
+
+        .MathJax_Hover_Arrow:hover span {
+            background-color: #CCC !important
+        }
+    </style>
+    <style type="text/css">
+        #MathJax_About {
+            position: fixed;
+            left: 50%;
+            width: auto;
+            text-align: center;
+            border: 3px outset;
+            padding: 1em 2em;
+            background-color: #DDDDDD;
+            color: black;
+            cursor: default;
+            font-family: message-box;
+            font-size: 120%;
+            font-style: normal;
+            text-indent: 0;
+            text-transform: none;
+            line-height: normal;
+            letter-spacing: normal;
+            word-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            float: none;
+            z-index: 201;
+            border-radius: 15px;
+            -webkit-border-radius: 15px;
+            -moz-border-radius: 15px;
+            -khtml-border-radius: 15px;
+            box-shadow: 0px 10px 20px #808080;
+            -webkit-box-shadow: 0px 10px 20px #808080;
+            -moz-box-shadow: 0px 10px 20px #808080;
+            -khtml-box-shadow: 0px 10px 20px #808080;
+            filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')
+        }
+
+        #MathJax_About.MathJax_MousePost {
+            outline: none
+        }
+
+        .MathJax_Menu {
+            position: absolute;
+            background-color: white;
+            color: black;
+            width: auto;
+            padding: 5px 0px;
+            border: 1px solid #CCCCCC;
+            margin: 0;
+            cursor: default;
+            font: menu;
+            text-align: left;
+            text-indent: 0;
+            text-transform: none;
+            line-height: normal;
+            letter-spacing: normal;
+            word-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            float: none;
+            z-index: 201;
+            border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            -khtml-border-radius: 5px;
+            box-shadow: 0px 10px 20px #808080;
+            -webkit-box-shadow: 0px 10px 20px #808080;
+            -moz-box-shadow: 0px 10px 20px #808080;
+            -khtml-box-shadow: 0px 10px 20px #808080;
+            filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')
+        }
+
+        .MathJax_MenuItem {
+            padding: 1px 2em;
+            background: transparent
+        }
+
+        .MathJax_MenuArrow {
+            position: absolute;
+            right: .5em;
+            padding-top: .25em;
+            color: #666666;
+            font-size: .75em
+        }
+
+        .MathJax_MenuActive .MathJax_MenuArrow {
+            color: white
+        }
+
+        .MathJax_MenuArrow.RTL {
+            left: .5em;
+            right: auto
+        }
+
+        .MathJax_MenuCheck {
+            position: absolute;
+            left: .7em
+        }
+
+        .MathJax_MenuCheck.RTL {
+            right: .7em;
+            left: auto
+        }
+
+        .MathJax_MenuRadioCheck {
+            position: absolute;
+            left: .7em
+        }
+
+        .MathJax_MenuRadioCheck.RTL {
+            right: .7em;
+            left: auto
+        }
+
+        .MathJax_MenuLabel {
+            padding: 1px 2em 3px 1.33em;
+            font-style: italic
+        }
+
+        .MathJax_MenuRule {
+            border-top: 1px solid #DDDDDD;
+            margin: 4px 3px
+        }
+
+        .MathJax_MenuDisabled {
+            color: GrayText
+        }
+
+        .MathJax_MenuActive {
+            background-color: #606872;
+            color: white
+        }
+
+        .MathJax_MenuDisabled:focus,
+        .MathJax_MenuLabel:focus {
+            background-color: #E8E8E8
+        }
+
+        .MathJax_ContextMenu:focus {
+            outline: none
+        }
+
+        .MathJax_ContextMenu .MathJax_MenuItem:focus {
+            outline: none
+        }
+
+        #MathJax_AboutClose {
+            top: .2em;
+            right: .2em
+        }
+
+        .MathJax_Menu .MathJax_MenuClose {
+            top: -10px;
+            left: -10px
+        }
+
+        .MathJax_MenuClose {
+            position: absolute;
+            cursor: pointer;
+            display: inline-block;
+            border: 2px solid #AAA;
+            border-radius: 18px;
+            -webkit-border-radius: 18px;
+            -moz-border-radius: 18px;
+            -khtml-border-radius: 18px;
+            font-family: 'Courier New', Courier;
+            font-size: 24px;
+            color: #F0F0F0
+        }
+
+        .MathJax_MenuClose span {
+            display: block;
+            background-color: #AAA;
+            border: 1.5px solid;
+            border-radius: 18px;
+            -webkit-border-radius: 18px;
+            -moz-border-radius: 18px;
+            -khtml-border-radius: 18px;
+            line-height: 0;
+            padding: 8px 0 6px
+        }
+
+        .MathJax_MenuClose:hover {
+            color: white !important;
+            border: 2px solid #CCC !important
+        }
+
+        .MathJax_MenuClose:hover span {
+            background-color: #CCC !important
+        }
+
+        .MathJax_MenuClose:hover:focus {
+            outline: none
+        }
+    </style>
+    <style type="text/css">
+        .MathJax_Preview .MJXf-math {
+            color: inherit !important
+        }
+    </style>
+    <style type="text/css">
+        .MJX_Assistive_MathML {
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            clip: rect(1px, 1px, 1px, 1px);
+            padding: 1px 0 0 0 !important;
+            border: 0 !important;
+            height: 1px !important;
+            width: 1px !important;
+            overflow: hidden !important;
+            display: block !important;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        .MJX_Assistive_MathML.MJX_Assistive_MathML_Block {
+            width: 100% !important
+        }
+    </style>
+    <style type="text/css">
+        #MathJax_Zoom {
+            position: absolute;
+            background-color: #F0F0F0;
+            overflow: auto;
+            display: block;
+            z-index: 301;
+            padding: .5em;
+            border: 1px solid black;
+            margin: 0;
+            font-weight: normal;
+            font-style: normal;
+            text-align: left;
+            text-indent: 0;
+            text-transform: none;
+            line-height: normal;
+            letter-spacing: normal;
+            word-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            float: none;
+            -webkit-box-sizing: content-box;
+            -moz-box-sizing: content-box;
+            box-sizing: content-box;
+            box-shadow: 5px 5px 15px #AAAAAA;
+            -webkit-box-shadow: 5px 5px 15px #AAAAAA;
+            -moz-box-shadow: 5px 5px 15px #AAAAAA;
+            -khtml-box-shadow: 5px 5px 15px #AAAAAA;
+            filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')
+        }
+
+        #MathJax_ZoomOverlay {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 300;
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            background-color: white;
+            opacity: 0;
+            filter: alpha(opacity=0)
+        }
+
+        #MathJax_ZoomFrame {
+            position: relative;
+            display: inline-block;
+            height: 0;
+            width: 0
+        }
+
+        #MathJax_ZoomEventTrap {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 302;
+            display: inline-block;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            background-color: white;
+            opacity: 0;
+            filter: alpha(opacity=0)
+        }
+    </style>
+    <style type="text/css">
+        .MathJax_Preview {
+            color: #888
+        }
+
+        #MathJax_Message {
+            position: fixed;
+            left: 1px;
+            bottom: 2px;
+            background-color: #E6E6E6;
+            border: 1px solid #959595;
+            margin: 0px;
+            padding: 2px 8px;
+            z-index: 102;
+            color: black;
+            font-size: 80%;
+            width: auto;
+            white-space: nowrap
+        }
+
+        #MathJax_MSIE_Frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0px;
+            z-index: 101;
+            border: 0px;
+            margin: 0px;
+            padding: 0px
+        }
+
+        .MathJax_Error {
+            color: #CC0000;
+            font-style: italic
+        }
+    </style>
+    <style type="text/css">
+        .MJXp-script {
+            font-size: .8em
+        }
+
+        .MJXp-right {
+            -webkit-transform-origin: right;
+            -moz-transform-origin: right;
+            -ms-transform-origin: right;
+            -o-transform-origin: right;
+            transform-origin: right
+        }
+
+        .MJXp-bold {
+            font-weight: bold
+        }
+
+        .MJXp-italic {
+            font-style: italic
+        }
+
+        .MJXp-scr {
+            font-family: MathJax_Script, 'Times New Roman', Times, STIXGeneral, serif
+        }
+
+        .MJXp-frak {
+            font-family: MathJax_Fraktur, 'Times New Roman', Times, STIXGeneral, serif
+        }
+
+        .MJXp-sf {
+            font-family: MathJax_SansSerif, 'Times New Roman', Times, STIXGeneral, serif
+        }
+
+        .MJXp-cal {
+            font-family: MathJax_Caligraphic, 'Times New Roman', Times, STIXGeneral, serif
+        }
+
+        .MJXp-mono {
+            font-family: MathJax_Typewriter, 'Times New Roman', Times, STIXGeneral, serif
+        }
+
+        .MJXp-largeop {
+            font-size: 150%
+        }
+
+        .MJXp-largeop.MJXp-int {
+            vertical-align: -.2em
+        }
+
+        .MJXp-math {
+            display: inline-block;
+            line-height: 1.2;
+            text-indent: 0;
+            font-family: 'Times New Roman', Times, STIXGeneral, serif;
+            white-space: nowrap;
+            border-collapse: collapse
+        }
+
+        .MJXp-display {
+            display: block;
+            text-align: center;
+            margin: 1em 0
+        }
+
+        .MJXp-math span {
+            display: inline-block
+        }
+
+        .MJXp-box {
+            display: block !important;
+            text-align: center
+        }
+
+        .MJXp-box:after {
+            content: " "
+        }
+
+        .MJXp-rule {
+            display: block !important;
+            margin-top: .1em
+        }
+
+        .MJXp-char {
+            display: block !important
+        }
+
+        .MJXp-mo {
+            margin: 0 .15em
+        }
+
+        .MJXp-mfrac {
+            margin: 0 .125em;
+            vertical-align: .25em
+        }
+
+        .MJXp-denom {
+            display: inline-table !important;
+            width: 100%
+        }
+
+        .MJXp-denom>* {
+            display: table-row !important
+        }
+
+        .MJXp-surd {
+            vertical-align: top
+        }
+
+        .MJXp-surd>* {
+            display: block !important
+        }
+
+        .MJXp-script-box>* {
+            display: table !important;
+            height: 50%
+        }
+
+        .MJXp-script-box>*>* {
+            display: table-cell !important;
+            vertical-align: top
+        }
+
+        .MJXp-script-box>*:last-child>* {
+            vertical-align: bottom
+        }
+
+        .MJXp-script-box>*>*>* {
+            display: block !important
+        }
+
+        .MJXp-mphantom {
+            visibility: hidden
+        }
+
+        .MJXp-munderover {
+            display: inline-table !important
+        }
+
+        .MJXp-over {
+            display: inline-block !important;
+            text-align: center
+        }
+
+        .MJXp-over>* {
+            display: block !important
+        }
+
+        .MJXp-munderover>* {
+            display: table-row !important
+        }
+
+        .MJXp-mtable {
+            vertical-align: .25em;
+            margin: 0 .125em
+        }
+
+        .MJXp-mtable>* {
+            display: inline-table !important;
+            vertical-align: middle
+        }
+
+        .MJXp-mtr {
+            display: table-row !important
+        }
+
+        .MJXp-mtd {
+            display: table-cell !important;
+            text-align: center;
+            padding: .5em 0 0 .5em
+        }
+
+        .MJXp-mtr>.MJXp-mtd:first-child {
+            padding-left: 0
+        }
+
+        .MJXp-mtr:first-child>.MJXp-mtd {
+            padding-top: 0
+        }
+
+        .MJXp-mlabeledtr {
+            display: table-row !important
+        }
+
+        .MJXp-mlabeledtr>.MJXp-mtd:first-child {
+            padding-left: 0
+        }
+
+        .MJXp-mlabeledtr:first-child>.MJXp-mtd {
+            padding-top: 0
+        }
+
+        .MJXp-merror {
+            background-color: #FFFF88;
+            color: #CC0000;
+            border: 1px solid #CC0000;
+            padding: 1px 3px;
+            font-style: normal;
+            font-size: 90%
+        }
+
+        .MJXp-scale0 {
+            -webkit-transform: scaleX(.0);
+            -moz-transform: scaleX(.0);
+            -ms-transform: scaleX(.0);
+            -o-transform: scaleX(.0);
+            transform: scaleX(.0)
+        }
+
+        .MJXp-scale1 {
+            -webkit-transform: scaleX(.1);
+            -moz-transform: scaleX(.1);
+            -ms-transform: scaleX(.1);
+            -o-transform: scaleX(.1);
+            transform: scaleX(.1)
+        }
+
+        .MJXp-scale2 {
+            -webkit-transform: scaleX(.2);
+            -moz-transform: scaleX(.2);
+            -ms-transform: scaleX(.2);
+            -o-transform: scaleX(.2);
+            transform: scaleX(.2)
+        }
+
+        .MJXp-scale3 {
+            -webkit-transform: scaleX(.3);
+            -moz-transform: scaleX(.3);
+            -ms-transform: scaleX(.3);
+            -o-transform: scaleX(.3);
+            transform: scaleX(.3)
+        }
+
+        .MJXp-scale4 {
+            -webkit-transform: scaleX(.4);
+            -moz-transform: scaleX(.4);
+            -ms-transform: scaleX(.4);
+            -o-transform: scaleX(.4);
+            transform: scaleX(.4)
+        }
+
+        .MJXp-scale5 {
+            -webkit-transform: scaleX(.5);
+            -moz-transform: scaleX(.5);
+            -ms-transform: scaleX(.5);
+            -o-transform: scaleX(.5);
+            transform: scaleX(.5)
+        }
+
+        .MJXp-scale6 {
+            -webkit-transform: scaleX(.6);
+            -moz-transform: scaleX(.6);
+            -ms-transform: scaleX(.6);
+            -o-transform: scaleX(.6);
+            transform: scaleX(.6)
+        }
+
+        .MJXp-scale7 {
+            -webkit-transform: scaleX(.7);
+            -moz-transform: scaleX(.7);
+            -ms-transform: scaleX(.7);
+            -o-transform: scaleX(.7);
+            transform: scaleX(.7)
+        }
+
+        .MJXp-scale8 {
+            -webkit-transform: scaleX(.8);
+            -moz-transform: scaleX(.8);
+            -ms-transform: scaleX(.8);
+            -o-transform: scaleX(.8);
+            transform: scaleX(.8)
+        }
+
+        .MJXp-scale9 {
+            -webkit-transform: scaleX(.9);
+            -moz-transform: scaleX(.9);
+            -ms-transform: scaleX(.9);
+            -o-transform: scaleX(.9);
+            transform: scaleX(.9)
+        }
+
+        .MathJax_PHTML .noError {
+            vertical-align: ;
+            font-size: 90%;
+            text-align: left;
+            color: black;
+            padding: 1px 3px;
+            border: 1px solid
+        }
+    </style>
+    <style type="text/css">
+        .mjx-chtml {
+            display: inline-block;
+            line-height: 0;
+            text-indent: 0;
+            text-align: left;
+            text-transform: none;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 100%;
+            font-size-adjust: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            word-spacing: normal;
+            white-space: nowrap;
+            float: none;
+            direction: ltr;
+            max-width: none;
+            max-height: none;
+            min-width: 0;
+            min-height: 0;
+            border: 0;
+            margin: 0;
+            padding: 1px 0
+        }
+
+        .MJXc-display {
+            display: block;
+            text-align: center;
+            margin: 1em 0;
+            padding: 0
+        }
+
+        .mjx-chtml[tabindex]:focus,
+        body :focus .mjx-chtml[tabindex] {
+            display: inline-table
+        }
+
+        .mjx-full-width {
+            text-align: center;
+            display: table-cell !important;
+            width: 10000em
+        }
+
+        .mjx-math {
+            display: inline-block;
+            border-collapse: separate;
+            border-spacing: 0
+        }
+
+        .mjx-math * {
+            display: inline-block;
+            -webkit-box-sizing: content-box !important;
+            -moz-box-sizing: content-box !important;
+            box-sizing: content-box !important;
+            text-align: left
+        }
+
+        .mjx-numerator {
+            display: block;
+            text-align: center
+        }
+
+        .mjx-denominator {
+            display: block;
+            text-align: center
+        }
+
+        .MJXc-stacked {
+            height: 0;
+            position: relative
+        }
+
+        .MJXc-stacked>* {
+            position: absolute
+        }
+
+        .MJXc-bevelled>* {
+            display: inline-block
+        }
+
+        .mjx-stack {
+            display: inline-block
+        }
+
+        .mjx-op {
+            display: block
+        }
+
+        .mjx-under {
+            display: table-cell
+        }
+
+        .mjx-over {
+            display: block
+        }
+
+        .mjx-over>* {
+            padding-left: 0px !important;
+            padding-right: 0px !important
+        }
+
+        .mjx-under>* {
+            padding-left: 0px !important;
+            padding-right: 0px !important
+        }
+
+        .mjx-stack>.mjx-sup {
+            display: block
+        }
+
+        .mjx-stack>.mjx-sub {
+            display: block
+        }
+
+        .mjx-prestack>.mjx-presup {
+            display: block
+        }
+
+        .mjx-prestack>.mjx-presub {
+            display: block
+        }
+
+        .mjx-delim-h>.mjx-char {
+            display: inline-block
+        }
+
+        .mjx-surd {
+            vertical-align: top
+        }
+
+        .mjx-mphantom * {
+            visibility: hidden
+        }
+
+        .mjx-merror {
+            background-color: #FFFF88;
+            color: #CC0000;
+            border: 1px solid #CC0000;
+            padding: 2px 3px;
+            font-style: normal;
+            font-size: 90%
+        }
+
+        .mjx-annotation-xml {
+            line-height: normal
+        }
+
+        .mjx-menclose>svg {
+            fill: none;
+            stroke: currentColor
+        }
+
+        .mjx-mtr {
+            display: table-row
+        }
+
+        .mjx-mlabeledtr {
+            display: table-row
+        }
+
+        .mjx-mtd {
+            display: table-cell;
+            text-align: center
+        }
+
+        .mjx-label {
+            display: table-row
+        }
+
+        .mjx-box {
+            display: inline-block
+        }
+
+        .mjx-block {
+            display: block
+        }
+
+        .mjx-span {
+            display: inline
+        }
+
+        .mjx-char {
+            display: block;
+            white-space: pre
+        }
+
+        .mjx-itable {
+            display: inline-table;
+            width: auto
+        }
+
+        .mjx-row {
+            display: table-row
+        }
+
+        .mjx-cell {
+            display: table-cell
+        }
+
+        .mjx-table {
+            display: table;
+            width: 100%
+        }
+
+        .mjx-line {
+            display: block;
+            height: 0
+        }
+
+        .mjx-strut {
+            width: 0;
+            padding-top: 1em
+        }
+
+        .mjx-vsize {
+            width: 0
+        }
+
+        .MJXc-space1 {
+            margin-left: .167em
+        }
+
+        .MJXc-space2 {
+            margin-left: .222em
+        }
+
+        .MJXc-space3 {
+            margin-left: .278em
+        }
+
+        .mjx-chartest {
+            display: block;
+            visibility: hidden;
+            position: absolute;
+            top: 0;
+            line-height: normal;
+            font-size: 500%
+        }
+
+        .mjx-chartest .mjx-char {
+            display: inline
+        }
+
+        .mjx-chartest .mjx-box {
+            padding-top: 1000px
+        }
+
+        .MJXc-processing {
+            visibility: hidden;
+            position: fixed;
+            width: 0;
+            height: 0;
+            overflow: hidden
+        }
+
+        .MJXc-processed {
+            display: none
+        }
+
+        .mjx-test {
+            display: block;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 100%;
+            font-size-adjust: none;
+            text-indent: 0;
+            text-transform: none;
+            letter-spacing: normal;
+            word-spacing: normal;
+            overflow: hidden;
+            height: 1px
+        }
+
+        .mjx-ex-box-test {
+            position: absolute;
+            width: 1px;
+            height: 60ex
+        }
+
+        .mjx-line-box-test {
+            display: table !important
+        }
+
+        .mjx-line-box-test span {
+            display: table-cell !important;
+            width: 10000em !important;
+            min-width: 0;
+            max-width: none;
+            padding: 0;
+            border: 0;
+            margin: 0
+        }
+
+        #MathJax_CHTML_Tooltip {
+            background-color: InfoBackground;
+            color: InfoText;
+            border: 1px solid black;
+            box-shadow: 2px 2px 5px #AAAAAA;
+            -webkit-box-shadow: 2px 2px 5px #AAAAAA;
+            -moz-box-shadow: 2px 2px 5px #AAAAAA;
+            -khtml-box-shadow: 2px 2px 5px #AAAAAA;
+            padding: 3px 4px;
+            z-index: 401;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: auto;
+            height: auto;
+            display: none
+        }
+
+        .mjx-chtml .mjx-noError {
+            line-height: 1.2;
+            vertical-align: ;
+            font-size: 90%;
+            text-align: left;
+            color: black;
+            padding: 1px 3px;
+            border: 1px solid
+        }
+
+        .MJXc-TeX-unknown-R {
+            font-family: STIXGeneral, 'Cambria Math', 'Arial Unicode MS', serif;
+            font-style: normal;
+            font-weight: normal
+        }
+
+        .MJXc-TeX-unknown-I {
+            font-family: STIXGeneral, 'Cambria Math', 'Arial Unicode MS', serif;
+            font-style: italic;
+            font-weight: normal
+        }
+
+        .MJXc-TeX-unknown-B {
+            font-family: STIXGeneral, 'Cambria Math', 'Arial Unicode MS', serif;
+            font-style: normal;
+            font-weight: bold
+        }
+
+        .MJXc-TeX-unknown-BI {
+            font-family: STIXGeneral, 'Cambria Math', 'Arial Unicode MS', serif;
+            font-style: italic;
+            font-weight: bold
+        }
+
+        .MJXc-TeX-ams-R {
+            font-family: MJXc-TeX-ams-R, MJXc-TeX-ams-Rw
+        }
+
+        .MJXc-TeX-cal-B {
+            font-family: MJXc-TeX-cal-B, MJXc-TeX-cal-Bx, MJXc-TeX-cal-Bw
+        }
+
+        .MJXc-TeX-frak-R {
+            font-family: MJXc-TeX-frak-R, MJXc-TeX-frak-Rw
+        }
+
+        .MJXc-TeX-frak-B {
+            font-family: MJXc-TeX-frak-B, MJXc-TeX-frak-Bx, MJXc-TeX-frak-Bw
+        }
+
+        .MJXc-TeX-math-BI {
+            font-family: MJXc-TeX-math-BI, MJXc-TeX-math-BIx, MJXc-TeX-math-BIw
+        }
+
+        .MJXc-TeX-sans-R {
+            font-family: MJXc-TeX-sans-R, MJXc-TeX-sans-Rw
+        }
+
+        .MJXc-TeX-sans-B {
+            font-family: MJXc-TeX-sans-B, MJXc-TeX-sans-Bx, MJXc-TeX-sans-Bw
+        }
+
+        .MJXc-TeX-sans-I {
+            font-family: MJXc-TeX-sans-I, MJXc-TeX-sans-Ix, MJXc-TeX-sans-Iw
+        }
+
+        .MJXc-TeX-script-R {
+            font-family: MJXc-TeX-script-R, MJXc-TeX-script-Rw
+        }
+
+        .MJXc-TeX-type-R {
+            font-family: MJXc-TeX-type-R, MJXc-TeX-type-Rw
+        }
+
+        .MJXc-TeX-cal-R {
+            font-family: MJXc-TeX-cal-R, MJXc-TeX-cal-Rw
+        }
+
+        .MJXc-TeX-main-B {
+            font-family: MJXc-TeX-main-B, MJXc-TeX-main-Bx, MJXc-TeX-main-Bw
+        }
+
+        .MJXc-TeX-main-I {
+            font-family: MJXc-TeX-main-I, MJXc-TeX-main-Ix, MJXc-TeX-main-Iw
+        }
+
+        .MJXc-TeX-main-R {
+            font-family: MJXc-TeX-main-R, MJXc-TeX-main-Rw
+        }
+
+        .MJXc-TeX-math-I {
+            font-family: MJXc-TeX-math-I, MJXc-TeX-math-Ix, MJXc-TeX-math-Iw
+        }
+
+        .MJXc-TeX-size1-R {
+            font-family: MJXc-TeX-size1-R, MJXc-TeX-size1-Rw
+        }
+
+        .MJXc-TeX-size2-R {
+            font-family: MJXc-TeX-size2-R, MJXc-TeX-size2-Rw
+        }
+
+        .MJXc-TeX-size3-R {
+            font-family: MJXc-TeX-size3-R, MJXc-TeX-size3-Rw
+        }
+
+        .MJXc-TeX-size4-R {
+            font-family: MJXc-TeX-size4-R, MJXc-TeX-size4-Rw
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-ams-R;
+            src: local('MathJax_AMS'), local('MathJax_AMS-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-ams-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_AMS-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_AMS-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_AMS-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-cal-B;
+            src: local('MathJax_Caligraphic Bold'), local('MathJax_Caligraphic-Bold')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-cal-Bx;
+            src: local('MathJax_Caligraphic');
+            font-weight: bold
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-cal-Bw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Caligraphic-Bold.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Bold.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-frak-R;
+            src: local('MathJax_Fraktur'), local('MathJax_Fraktur-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-frak-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Fraktur-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Fraktur-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Fraktur-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-frak-B;
+            src: local('MathJax_Fraktur Bold'), local('MathJax_Fraktur-Bold')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-frak-Bx;
+            src: local('MathJax_Fraktur');
+            font-weight: bold
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-frak-Bw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Fraktur-Bold.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Fraktur-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Fraktur-Bold.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-math-BI;
+            src: local('MathJax_Math BoldItalic'), local('MathJax_Math-BoldItalic')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-math-BIx;
+            src: local('MathJax_Math');
+            font-weight: bold;
+            font-style: italic
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-math-BIw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Math-BoldItalic.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Math-BoldItalic.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Math-BoldItalic.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-sans-R;
+            src: local('MathJax_SansSerif'), local('MathJax_SansSerif-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-sans-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-sans-B;
+            src: local('MathJax_SansSerif Bold'), local('MathJax_SansSerif-Bold')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-sans-Bx;
+            src: local('MathJax_SansSerif');
+            font-weight: bold
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-sans-Bw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Bold.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Bold.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-sans-I;
+            src: local('MathJax_SansSerif Italic'), local('MathJax_SansSerif-Italic')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-sans-Ix;
+            src: local('MathJax_SansSerif');
+            font-style: italic
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-sans-Iw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_SansSerif-Italic.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_SansSerif-Italic.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_SansSerif-Italic.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-script-R;
+            src: local('MathJax_Script'), local('MathJax_Script-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-script-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Script-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Script-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Script-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-type-R;
+            src: local('MathJax_Typewriter'), local('MathJax_Typewriter-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-type-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Typewriter-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Typewriter-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Typewriter-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-cal-R;
+            src: local('MathJax_Caligraphic'), local('MathJax_Caligraphic-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-cal-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Caligraphic-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-main-B;
+            src: local('MathJax_Main Bold'), local('MathJax_Main-Bold')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-main-Bx;
+            src: local('MathJax_Main');
+            font-weight: bold
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-main-Bw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Main-Bold.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Main-Bold.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Main-Bold.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-main-I;
+            src: local('MathJax_Main Italic'), local('MathJax_Main-Italic')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-main-Ix;
+            src: local('MathJax_Main');
+            font-style: italic
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-main-Iw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Main-Italic.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Main-Italic.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Main-Italic.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-main-R;
+            src: local('MathJax_Main'), local('MathJax_Main-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-main-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Main-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Main-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Main-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-math-I;
+            src: local('MathJax_Math Italic'), local('MathJax_Math-Italic')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-math-Ix;
+            src: local('MathJax_Math');
+            font-style: italic
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-math-Iw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Math-Italic.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Math-Italic.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Math-Italic.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-size1-R;
+            src: local('MathJax_Size1'), local('MathJax_Size1-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-size1-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Size1-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Size1-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Size1-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-size2-R;
+            src: local('MathJax_Size2'), local('MathJax_Size2-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-size2-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Size2-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Size2-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Size2-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-size3-R;
+            src: local('MathJax_Size3'), local('MathJax_Size3-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-size3-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Size3-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Size3-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Size3-Regular.otf') format('opentype')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-size4-R;
+            src: local('MathJax_Size4'), local('MathJax_Size4-Regular')
+        }
+
+        @font-face {
+            font-family: MJXc-TeX-size4-Rw;
+            src
+            /*1*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/eot/MathJax_Size4-Regular.eot');
+            src
+            /*2*/
+            : url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Size4-Regular.woff') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Size4-Regular.otf') format('opentype')
+        }
+    </style>
+</head>
+
+<body>
+    <div id="MathJax_Message" style="display: none;"></div>
+    <!--[if lt IE 7]>
+<p class="browsehappy">You are using an 
+    <strong>outdated</strong> browser. Please 
+    <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
+</p>
+<![endif]-->
+    <div class="container">
+
+        <nav class="navbar">
+            <div class="container">
+                <ul class="navbar-list">
+                    <li class="navbar-item">
+                        <a class="navbar-link" href="#intro">Intro</a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="navbar-link" href="#background">Background</a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="navbar-link" href="#setup">Setup</a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="navbar-link" href="#results">Results</a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="navbar-link" href="#conclusion">Conclusion</a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="navbar-link" href="#futurework">Future Work</a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="navbar-link" href="#references">References</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <section class="header" id="intro">
+            <h2 class="title">Robotic Arm Control Models of Grasping</h2>
+            <h6>Project by Maurice Quennet (<a
+                    href="mailto:maurice.quennet@campus.tu-berlin.de">maurice.quennet@campus.tu-berlin.de</a>)
+            </h6>
+
+            <div class="row">
+                <p>This project analyzes the movement of the human
+                    arm when grasping objects using two models from control theory:
+                    second-order lag&nbsp;(2OL) and Bang-bang. These models are compared
+                    against recorded movements by four participants for model fit. The best
+                    fitting model is then implemented on a robotic arm (<a
+                        href="https://www.ufactory.cc/#/en/uarmswift">uARM Swift Pro</a>) along with a matching
+                    recording both to visualize the model fit and to highlight the results of this project.</p>
+            </div>
+        </section>
+
+
+        <div class="docs-section" id="background">
+            <h3 class="section-heading">Background</h3>
+            <p class="section-description">Müller et al.&nbsp;<a href="#1">[1]</a>
+                have suggested that traditional models of human-machine interaction,
+                such as Fitts’ Law, while not (necessarily) incorrect, are definitely
+                incomplete. Models, such as Fitts’ Law, describe only the end result of
+                human-machine interaction (i.e., interaction time and probability of
+                success), but do not describe the process of interaction itself. Müller
+                et al. seek to reintroduce control theory, which was once “at the core
+                of the subject,”&nbsp;<a href="#1">[1]</a> but has long since dwindled
+                in popularity, to the study of human-machine interaction. The often
+                actually-not-so-new models of control theory are intended not to replace
+                but to complement traditional models, such as Fitts’ Law.</p>
+
+            <p class="section-description">This project builds on the work
+                of Müller et al. in that it tries to model human behaviour using control
+                theory. While Müller et al. modelled one-dimensional pointing dynamics,
+                this project will model the movement of the human arm when grasping
+                objects in two dimensions. Furthermore, two of the models used by Müller
+                et al., second-order lag and Bang-bang, will be used for this analysis
+                (while the other two, Costello’s Surge and McRuer’s Crossover, will
+                not).</p>
+
+            <h5>Control theory</h5>
+
+            <p>Control theory has been around in other disciplines for quite
+                some time, such as electrical engineering, where it has been used to,
+                for example, analyze the behaviour of electric circuits. <em>Manual</em> control theory, specifically,
+                seeks to apply these techniques to “model the interaction of humans with machines.”&nbsp;<a
+                    href="#1">[1]</a></p>
+
+            <p>The most important concept in control theory is that of a <em>closed-loop system</em> or
+                <em>feedback</em>. In such a system, the output contributes to, or is <em>fed back</em>
+                into, the input of the system. In an electrical circuit, this is
+                directly visible in that a wire of some sort connects input and output
+                of the circuit. This concept can be transfered to human behavior. An
+                example would be a human grasping an object. The human sees the object
+                and evaluates its distance to his arm (input). He then puts an action in
+                motion, i.e., moves his arm (output). This action reduces the distance
+                between the object and his arm, which is then reevaluated by the human
+                and the cycle begins anew. Thus the output (movement of the arm) affects
+                the input (distance between arm and object).</p>
+
+            <div class="u-pull-right" style="text-align: center; width: 50%">
+                <img id="fig1" class="u-max-full-width" src="index_files/block.png">
+                <p>A block diagram of a second-order system.&nbsp;<a href="#2">[2]</a></p>
+            </div>
+
+            <p>In control theory, such systems, as described above, are
+                usually visualized using block diagrams. An example of a block diagram
+                can be seen in <a href="#fig1">Figure&nbsp;1</a>. Such diagrams are more
+                widely know from electrical engineering as circuit diagrams. These
+                diagrams, or at last more general versions of them, can also be used to
+                describe human behavior. Albeit, they provide only a human “interface”
+                to describe feedback systems. To model a feedback system mathematically,
+                different tools are needed. One such tool is differential equations,
+                which can be derived from block diagrams (described in detail in the
+                book “Control Theory for Humans: Quantitative Approaches to Modeling
+                Performance” by Jagacinski and Flach&nbsp;<a href="#2">[2]</a>). For example, the differential equation
+                describing the system pictured in <a href="#fig1">Figure&nbsp;1</a> is <span class="MathJax_Preview"
+                    style="color: inherit; display: none;"></span><span class="mjx-chtml MJXc-display"
+                    style="text-align: center;"><span id="MathJax-Element-1-Frame" class="mjx-chtml MathJax_CHTML"
+                        tabindex="0" style="font-size: 120%; text-align: center; position: relative;"
+                        data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;mi&gt;F&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;&amp;#x2212;&lt;/mo&gt;&lt;mi&gt;k&lt;/mi&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mover&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mo&gt;&amp;#x02D9;&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;&amp;#x2212;&lt;/mo&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mover&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mo&gt;&amp;#x00A8;&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/math&gt;"
+                        role="presentation"><span id="MJXc-Node-1" class="mjx-math" aria-hidden="true"><span
+                                id="MJXc-Node-2" class="mjx-mrow"><span id="MJXc-Node-3" class="mjx-mi"><span
+                                        class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.447em; padding-bottom: 0.281em; padding-right: 0.106em;">F</span></span><span
+                                    id="MJXc-Node-4" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
+                                    id="MJXc-Node-5" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.392em; padding-bottom: 0.281em;">t</span></span><span
+                                    id="MJXc-Node-6" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
+                                    id="MJXc-Node-7" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">−</span></span><span
+                                    id="MJXc-Node-8" class="mjx-mi MJXc-space2"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.447em; padding-bottom: 0.281em;">k</span></span><span
+                                    id="MJXc-Node-9" class="mjx-texatom"><span id="MJXc-Node-10" class="mjx-mrow"><span
+                                            id="MJXc-Node-11" class="mjx-munderover"><span class="mjx-stack"><span
+                                                    class="mjx-over"
+                                                    style="height: 0.17em; padding-bottom: 0.06em; padding-left: 0.064em;"><span
+                                                        id="MJXc-Node-13" class="mjx-mo"
+                                                        style="vertical-align: top;"><span
+                                                            class="mjx-char MJXc-TeX-main-R"
+                                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">˙</span></span></span><span
+                                                    class="mjx-op"><span id="MJXc-Node-12" class="mjx-mi"><span
+                                                            class="mjx-char MJXc-TeX-math-I"
+                                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span></span></span></span></span><span
+                                    id="MJXc-Node-14" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
+                                    id="MJXc-Node-15" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.392em; padding-bottom: 0.281em;">t</span></span><span
+                                    id="MJXc-Node-16" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
+                                    id="MJXc-Node-17" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">−</span></span><span
+                                    id="MJXc-Node-18" class="mjx-mi MJXc-space2"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span><span
+                                    id="MJXc-Node-19" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
+                                    id="MJXc-Node-20" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.392em; padding-bottom: 0.281em;">t</span></span><span
+                                    id="MJXc-Node-21" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
+                                    id="MJXc-Node-22" class="mjx-mo MJXc-space3"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.058em; padding-bottom: 0.336em;">=</span></span><span
+                                    id="MJXc-Node-23" class="mjx-texatom MJXc-space3"><span id="MJXc-Node-24"
+                                        class="mjx-mrow"><span id="MJXc-Node-25" class="mjx-munderover"><span
+                                                class="mjx-stack"><span class="mjx-over"
+                                                    style="height: 0.165em; padding-bottom: 0.06em; padding-left: 0.064em;"><span
+                                                        id="MJXc-Node-27" class="mjx-mo"
+                                                        style="vertical-align: top;"><span
+                                                            class="mjx-char MJXc-TeX-main-R"
+                                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">¨</span></span></span><span
+                                                    class="mjx-op"><span id="MJXc-Node-26" class="mjx-mi"><span
+                                                            class="mjx-char MJXc-TeX-math-I"
+                                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span></span></span></span></span><span
+                                    id="MJXc-Node-28" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
+                                    id="MJXc-Node-29" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.392em; padding-bottom: 0.281em;">t</span></span><span
+                                    id="MJXc-Node-30" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span></span></span><span
+                            class="MJX_Assistive_MathML MJX_Assistive_MathML_Block" role="presentation"><math
+                                xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mi>F</mi>
+                                <mo stretchy="false">(</mo>
+                                <mi>t</mi>
+                                <mo stretchy="false">)</mo>
+                                <mo>−</mo>
+                                <mi>k</mi>
+                                <mrow class="MJX-TeXAtom-ORD">
+                                    <mover>
+                                        <mi>x</mi>
+                                        <mo>˙</mo>
+                                    </mover>
+                                </mrow>
+                                <mo stretchy="false">(</mo>
+                                <mi>t</mi>
+                                <mo stretchy="false">)</mo>
+                                <mo>−</mo>
+                                <mi>x</mi>
+                                <mo stretchy="false">(</mo>
+                                <mi>t</mi>
+                                <mo stretchy="false">)</mo>
+                                <mo>=</mo>
+                                <mrow class="MJX-TeXAtom-ORD">
+                                    <mover>
+                                        <mi>x</mi>
+                                        <mo>¨</mo>
+                                    </mover>
+                                </mrow>
+                                <mo stretchy="false">(</mo>
+                                <mi>t</mi>
+                                <mo stretchy="false">)</mo>
+                            </math></span></span></span>
+                <script type="math/tex; mode=display"
+                    id="MathJax-Element-1">F(t) - k\dot{x}(t) - x(t) = \ddot{x}(t)</script>
+            </p>
+
+            <h5>Second-order lag</h5>
+
+            <div class="u-pull-left" style="text-align: center; width: 50%">
+                <img id="fig2" class="u-max-full-width" src="index_files/2ol.svg">
+                <p>Step-response of second-order lag.&nbsp;<a href="#2">[2]</a></p>
+            </div>
+
+            <p>Second-order lag (2OL) is a linear time-invariant system (LTI) that is described by the second-order
+                differential equation <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span
+                    class="mjx-chtml MJXc-display" style="text-align: center;"><span id="MathJax-Element-2-Frame"
+                        class="mjx-chtml MathJax_CHTML" tabindex="0"
+                        style="font-size: 120%; text-align: center; position: relative;"
+                        data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;mi&gt;m&lt;/mi&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mover&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;&amp;#x00A8;&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;d&lt;/mi&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mover&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;&amp;#x02D9;&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;k&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mi&gt;u&lt;/mi&gt;&lt;/math&gt;"
+                        role="presentation"><span id="MJXc-Node-31" class="mjx-math" aria-hidden="true"><span
+                                id="MJXc-Node-32" class="mjx-mrow"><span id="MJXc-Node-33" class="mjx-mi"><span
+                                        class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.225em; padding-bottom: 0.281em;">m</span></span><span
+                                    id="MJXc-Node-34" class="mjx-texatom"><span id="MJXc-Node-35" class="mjx-mrow"><span
+                                            id="MJXc-Node-36" class="mjx-munderover"><span class="mjx-stack"><span
+                                                    class="mjx-over"
+                                                    style="height: 0.165em; padding-bottom: 0.06em; padding-left: 0.083em;"><span
+                                                        id="MJXc-Node-38" class="mjx-mo"
+                                                        style="vertical-align: top;"><span
+                                                            class="mjx-char MJXc-TeX-main-R"
+                                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">¨</span></span></span><span
+                                                    class="mjx-op"><span id="MJXc-Node-37" class="mjx-mi"><span
+                                                            class="mjx-char MJXc-TeX-math-I"
+                                                            style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.006em;">y</span></span></span></span></span></span></span><span
+                                    id="MJXc-Node-39" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">+</span></span><span
+                                    id="MJXc-Node-40" class="mjx-mi MJXc-space2"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.447em; padding-bottom: 0.281em; padding-right: 0.003em;">d</span></span><span
+                                    id="MJXc-Node-41" class="mjx-texatom"><span id="MJXc-Node-42" class="mjx-mrow"><span
+                                            id="MJXc-Node-43" class="mjx-munderover"><span class="mjx-stack"><span
+                                                    class="mjx-over"
+                                                    style="height: 0.17em; padding-bottom: 0.06em; padding-left: 0.083em;"><span
+                                                        id="MJXc-Node-45" class="mjx-mo"
+                                                        style="vertical-align: top;"><span
+                                                            class="mjx-char MJXc-TeX-main-R"
+                                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">˙</span></span></span><span
+                                                    class="mjx-op"><span id="MJXc-Node-44" class="mjx-mi"><span
+                                                            class="mjx-char MJXc-TeX-math-I"
+                                                            style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.006em;">y</span></span></span></span></span></span></span><span
+                                    id="MJXc-Node-46" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">+</span></span><span
+                                    id="MJXc-Node-47" class="mjx-mi MJXc-space2"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.447em; padding-bottom: 0.281em;">k</span></span><span
+                                    id="MJXc-Node-48" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.006em;">y</span></span><span
+                                    id="MJXc-Node-49" class="mjx-mo MJXc-space3"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.058em; padding-bottom: 0.336em;">=</span></span><span
+                                    id="MJXc-Node-50" class="mjx-mi MJXc-space3"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.225em; padding-bottom: 0.281em;">u</span></span></span></span><span
+                            class="MJX_Assistive_MathML MJX_Assistive_MathML_Block" role="presentation"><math
+                                xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mi>m</mi>
+                                <mrow class="MJX-TeXAtom-ORD">
+                                    <mover>
+                                        <mi>y</mi>
+                                        <mo>¨</mo>
+                                    </mover>
+                                </mrow>
+                                <mo>+</mo>
+                                <mi>d</mi>
+                                <mrow class="MJX-TeXAtom-ORD">
+                                    <mover>
+                                        <mi>y</mi>
+                                        <mo>˙</mo>
+                                    </mover>
+                                </mrow>
+                                <mo>+</mo>
+                                <mi>k</mi>
+                                <mi>y</mi>
+                                <mo>=</mo>
+                                <mi>u</mi>
+                            </math></span></span></span>
+                <script type="math/tex; mode=display" id="MathJax-Element-2">m\ddot{y} + d\dot{y} + ky = u</script>
+                Intuitively, the second-order lag would mean for the example of a human
+                grasping an object that, depending on the dampening factor, the human
+                would miss the target object, because he was going to fast, and then,
+                trying to correct his mistake, would back up and then oscillate back and
+                forth in smaller and smaller motions until he hit the target. If the
+                dampening factor is too strong, i.e., the arm is not accelerated enough,
+                the human would never actually reach the target (if a time limit is
+                set) or would take a very long time to do so.</p>
+
+            <h5>Bang-bang</h5>
+
+            <p>Bang-bang is, as opposed to 2OL, not a linear model. Instead it is a “nonlinear, maximum-effort,
+                minimum-time model.”&nbsp;<a href="#1">[1]</a>
+                In the example of a human grasping an object, the Bang-bang model would
+                describe the movement of the human arm as, first, maximum acceleration
+                and, then, maximum deceleration.&nbsp;<a href="#1">[1]</a> Also, it
+                cannot be described using linear differential equations, as it is
+                possible with 2OL. Fortunately, this does not pose a problem in practice
+                (as described <a href="#results">later</a>).</p>
+
+            <div class="u-pull-right" style="text-align: center; width: 50%">
+                <img id="fig3" class="u-max-full-width" src="index_files/bb.svg">
+                <p>The Bang-bang model at different accelerations.</p>
+            </div>
+        </div>
+
+
+        <div class="docs-section" id="setup">
+            <h3 class="section-heading">Setup</h3>
+
+            <p>The setup for recording the arm movements is pictured in <a href="#fig4">Figure&nbsp;4</a>.
+                The recordings were done using several OptiTrack Flex 3 cameras
+                (circled in green in the picture), which record at 100Hz at an image
+                resolution of 640 × 480 Pixels (0.3 MP). The participants were wearing a
+                wristband (circled in blue in the picture). Attached to this wristband
+                are three small plastic spheres, whose position in space were recorded
+                by the cameras. These yield, of course, a triangle in space and thus an
+                orientation. The recorded motion of the participant's arm is indicated
+                in the picture by the red arrow-headed arch. The participant starts out
+                with his forearm raised in a position vertical to the table. During the
+                recording the participant moves his arm foreward to grab and object and
+                then moving it back to the initial position to lift the object. During
+                all this the participant's elbow stays fixed on the table. There were
+                four participants, each recording five movements, yielding twenty
+                recordings in total.</p>
+
+            <div class="u-full-width" style="text-align: center">
+                <img id="fig4" src="index_files/setup.jpg">
+                <p>The recording setup: OptiTrack cameras are circled in
+                    green, the armband is circled in blue, and the movement is described by
+                    the red arch.</p>
+            </div>
+
+            <p>At some points during the recording, the OptiTrack cameras
+                failed to properly record the arm movements. In these cases the position
+                in space was assigned the value of <span class="MathJax_Preview"
+                    style="color: inherit; display: none;"></span><span id="MathJax-Element-3-Frame"
+                    class="mjx-chtml MathJax_CHTML" tabindex="0" style="font-size: 120%; position: relative;"
+                    data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mn&gt;0.0&lt;/mn&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;mn&gt;0.0&lt;/mn&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;mn&gt;0.0&lt;/mn&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/math&gt;"
+                    role="presentation"><span id="MJXc-Node-51" class="mjx-math" aria-hidden="true"><span
+                            id="MJXc-Node-52" class="mjx-mrow"><span id="MJXc-Node-53" class="mjx-mo"><span
+                                    class="mjx-char MJXc-TeX-main-R"
+                                    style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
+                                id="MJXc-Node-54" class="mjx-mn"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="padding-top: 0.392em; padding-bottom: 0.336em;">0.0</span></span><span
+                                id="MJXc-Node-55" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
+                                id="MJXc-Node-56" class="mjx-mn MJXc-space1"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="padding-top: 0.392em; padding-bottom: 0.336em;">0.0</span></span><span
+                                id="MJXc-Node-57" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
+                                id="MJXc-Node-58" class="mjx-mn MJXc-space1"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="padding-top: 0.392em; padding-bottom: 0.336em;">0.0</span></span><span
+                                id="MJXc-Node-59" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span></span></span><span
+                        class="MJX_Assistive_MathML" role="presentation"><math
+                            xmlns="http://www.w3.org/1998/Math/MathML">
+                            <mo stretchy="false">(</mo>
+                            <mn>0.0</mn>
+                            <mo>,</mo>
+                            <mn>0.0</mn>
+                            <mo>,</mo>
+                            <mn>0.0</mn>
+                            <mo stretchy="false">)</mo>
+                        </math></span></span>
+                <script type="math/tex" id="MathJax-Element-3">(0.0, 0.0, 0.0)</script>
+                by the recording software. Because of that, the recordings were cleaned
+                up afterwards in two ways. First, the beginnings and ends were cropped
+                so that only the properly recorded portions of the arm movement
+                remained. Second, in four recordings a few small outliers (but which
+                were clearly and visibly not from natural jitter of the human arm)
+                remained in the otherwise properly recorded portion of the recording.
+                These outliers were each 1–3Hz long and, since they were small in
+                number, were picked out manually and then smoothed out by simply keeping
+                the velocity of the previous two recording points.</p>
+        </div>
+
+        <div class="docs-section" id="results">
+            <h3 class="section-heading">Results</h3>
+
+            <p>As mentioned in the previous section, the arm movement was
+                recorded using a wristband with three plastic spheres attached. As a
+                result, each recording contains three separate motions in space. Since
+                this project analyzes only translation, and not rotation, and to make
+                analysis of the data easier (and quicker), these three separate motion
+                tracks were averaged, i.e., for every single point in time, the recorded
+                position vectors were added and divided by three, resulting a single
+                motion track. Because all three motion tracks describe the same movement
+                (with very little variation), the averaging qualitatively changed the
+                motion very little. Furthermore, only two dimensions,
+                Y&nbsp;(forward/backward) and Z&nbsp;(up/down), of the recorded
+                movements were analyzed.</p>
+
+            <p>Analyzing the data consisted of evaluating the model fitness
+                of both second-order lag and Bang-bang. To measure model fitness, the
+                Mean-Square-Error (MSE) function was used, which is based on the
+                Root-Mean-Square-Error (RMSE) used by Müller et al.<a href="#1">[1]</a> For two functions <span
+                    class="MathJax_Preview" style="color: inherit; display: none;"></span><span
+                    id="MathJax-Element-4-Frame" class="mjx-chtml MathJax_CHTML" tabindex="0"
+                    style="font-size: 120%; position: relative;"
+                    data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;f&lt;/mi&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;mi&gt;g&lt;/mi&gt;&lt;/math&gt;"
+                    role="presentation"><span id="MJXc-Node-60" class="mjx-math" aria-hidden="true"><span
+                            id="MJXc-Node-61" class="mjx-mrow"><span id="MJXc-Node-62" class="mjx-mi"><span
+                                    class="mjx-char MJXc-TeX-math-I"
+                                    style="padding-top: 0.503em; padding-bottom: 0.503em; padding-right: 0.06em;">f</span></span><span
+                                id="MJXc-Node-63" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
+                                id="MJXc-Node-64" class="mjx-mi MJXc-space1"><span class="mjx-char MJXc-TeX-math-I"
+                                    style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.003em;">g</span></span></span></span><span
+                        class="MJX_Assistive_MathML" role="presentation"><math
+                            xmlns="http://www.w3.org/1998/Math/MathML">
+                            <mi>f</mi>
+                            <mo>,</mo>
+                            <mi>g</mi>
+                        </math></span></span>
+                <script type="math/tex" id="MathJax-Element-4">f, g</script> the MSE is calculated by <span
+                    class="MathJax_Preview" style="color: inherit; display: none;"></span><span
+                    class="mjx-chtml MJXc-display" style="text-align: center;"><span id="MathJax-Element-5-Frame"
+                        class="mjx-chtml MathJax_CHTML" tabindex="0"
+                        style="font-size: 120%; text-align: center; position: relative;"
+                        data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;mi&gt;M&lt;/mi&gt;&lt;mi&gt;S&lt;/mi&gt;&lt;mi&gt;E&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;munderover&gt;&lt;mo&gt;&amp;#x2211;&lt;/mo&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;/mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/munderover&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;f&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;&amp;#x2212;&lt;/mo&gt;&lt;mi&gt;g&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;msup&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/msup&gt;&lt;/mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/mfrac&gt;&lt;/math&gt;"
+                        role="presentation"><span id="MJXc-Node-65" class="mjx-math" aria-hidden="true"><span
+                                id="MJXc-Node-66" class="mjx-mrow"><span id="MJXc-Node-67" class="mjx-mi"><span
+                                        class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.447em; padding-bottom: 0.281em; padding-right: 0.081em;">M</span></span><span
+                                    id="MJXc-Node-68" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.503em; padding-bottom: 0.281em; padding-right: 0.032em;">S</span></span><span
+                                    id="MJXc-Node-69" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                        style="padding-top: 0.447em; padding-bottom: 0.281em; padding-right: 0.026em;">E</span></span><span
+                                    id="MJXc-Node-70" class="mjx-mo MJXc-space3"><span class="mjx-char MJXc-TeX-main-R"
+                                        style="padding-top: 0.058em; padding-bottom: 0.336em;">=</span></span><span
+                                    id="MJXc-Node-71" class="mjx-munderover MJXc-space3"><span class="mjx-itable"><span
+                                            class="mjx-row"><span class="mjx-cell"><span class="mjx-stack"><span
+                                                        class="mjx-over"
+                                                        style="font-size: 70.7%; padding-bottom: 0.247em; padding-top: 0.141em; padding-left: 0.721em;"><span
+                                                            id="MJXc-Node-78" class="mjx-mi" style=""><span
+                                                                class="mjx-char MJXc-TeX-math-I"
+                                                                style="padding-top: 0.225em; padding-bottom: 0.281em;">n</span></span></span><span
+                                                        class="mjx-op"><span id="MJXc-Node-72" class="mjx-mo"><span
+                                                                class="mjx-char MJXc-TeX-size2-R"
+                                                                style="padding-top: 0.725em; padding-bottom: 0.725em;">∑</span></span></span></span></span></span><span
+                                            class="mjx-row"><span class="mjx-under"
+                                                style="font-size: 70.7%; padding-top: 0.236em; padding-bottom: 0.141em; padding-left: 0.21em;"><span
+                                                    id="MJXc-Node-73" class="mjx-texatom" style=""><span
+                                                        id="MJXc-Node-74" class="mjx-mrow"><span id="MJXc-Node-75"
+                                                            class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                                                style="padding-top: 0.447em; padding-bottom: 0.281em;">i</span></span><span
+                                                            id="MJXc-Node-76" class="mjx-mo"><span
+                                                                class="mjx-char MJXc-TeX-main-R"
+                                                                style="padding-top: 0.058em; padding-bottom: 0.336em;">=</span></span><span
+                                                            id="MJXc-Node-77" class="mjx-mn"><span
+                                                                class="mjx-char MJXc-TeX-main-R"
+                                                                style="padding-top: 0.392em; padding-bottom: 0.336em;">1</span></span></span></span></span></span></span></span><span
+                                    id="MJXc-Node-79" class="mjx-mfrac MJXc-space1"><span class="mjx-box MJXc-stacked"
+                                        style="width: 6.878em; padding: 0px 0.12em;"><span class="mjx-numerator"
+                                            style="width: 6.878em; top: -1.61em;"><span id="MJXc-Node-80"
+                                                class="mjx-mrow"><span id="MJXc-Node-81" class="mjx-mo"><span
+                                                        class="mjx-char MJXc-TeX-main-R"
+                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
+                                                    id="MJXc-Node-82" class="mjx-mi"><span
+                                                        class="mjx-char MJXc-TeX-math-I"
+                                                        style="padding-top: 0.503em; padding-bottom: 0.503em; padding-right: 0.06em;">f</span></span><span
+                                                    id="MJXc-Node-83" class="mjx-mo"><span
+                                                        class="mjx-char MJXc-TeX-main-R"
+                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
+                                                    id="MJXc-Node-84" class="mjx-msubsup"><span class="mjx-base"><span
+                                                            id="MJXc-Node-85" class="mjx-mi"><span
+                                                                class="mjx-char MJXc-TeX-math-I"
+                                                                style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span><span
+                                                        class="mjx-sub"
+                                                        style="font-size: 70.7%; vertical-align: -0.212em; padding-right: 0.071em;"><span
+                                                            id="MJXc-Node-86" class="mjx-mi" style=""><span
+                                                                class="mjx-char MJXc-TeX-math-I"
+                                                                style="padding-top: 0.447em; padding-bottom: 0.281em;">i</span></span></span></span><span
+                                                    id="MJXc-Node-87" class="mjx-mo"><span
+                                                        class="mjx-char MJXc-TeX-main-R"
+                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
+                                                    id="MJXc-Node-88" class="mjx-mo MJXc-space2"><span
+                                                        class="mjx-char MJXc-TeX-main-R"
+                                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">−</span></span><span
+                                                    id="MJXc-Node-89" class="mjx-mi MJXc-space2"><span
+                                                        class="mjx-char MJXc-TeX-math-I"
+                                                        style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.003em;">g</span></span><span
+                                                    id="MJXc-Node-90" class="mjx-mo"><span
+                                                        class="mjx-char MJXc-TeX-main-R"
+                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
+                                                    id="MJXc-Node-91" class="mjx-msubsup"><span class="mjx-base"><span
+                                                            id="MJXc-Node-92" class="mjx-mi"><span
+                                                                class="mjx-char MJXc-TeX-math-I"
+                                                                style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span><span
+                                                        class="mjx-sub"
+                                                        style="font-size: 70.7%; vertical-align: -0.212em; padding-right: 0.071em;"><span
+                                                            id="MJXc-Node-93" class="mjx-mi" style=""><span
+                                                                class="mjx-char MJXc-TeX-math-I"
+                                                                style="padding-top: 0.447em; padding-bottom: 0.281em;">i</span></span></span></span><span
+                                                    id="MJXc-Node-94" class="mjx-mo"><span
+                                                        class="mjx-char MJXc-TeX-main-R"
+                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
+                                                    id="MJXc-Node-95" class="mjx-msubsup"><span class="mjx-base"><span
+                                                            id="MJXc-Node-96" class="mjx-mo"><span
+                                                                class="mjx-char MJXc-TeX-main-R"
+                                                                style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span></span><span
+                                                        class="mjx-sup"
+                                                        style="font-size: 70.7%; vertical-align: 0.513em; padding-left: 0px; padding-right: 0.071em;"><span
+                                                            id="MJXc-Node-97" class="mjx-mn" style=""><span
+                                                                class="mjx-char MJXc-TeX-main-R"
+                                                                style="padding-top: 0.392em; padding-bottom: 0.336em;">2</span></span></span></span></span></span><span
+                                            class="mjx-denominator" style="width: 6.878em; bottom: -0.722em;"><span
+                                                id="MJXc-Node-98" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                                    style="padding-top: 0.225em; padding-bottom: 0.281em;">n</span></span></span><span
+                                            style="border-bottom: 1.3px solid; top: -0.285em; width: 6.878em;"
+                                            class="mjx-line"></span></span><span
+                                        style="height: 2.332em; vertical-align: -0.722em;"
+                                        class="mjx-vsize"></span></span></span></span><span
+                            class="MJX_Assistive_MathML MJX_Assistive_MathML_Block" role="presentation"><math
+                                xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mi>M</mi>
+                                <mi>S</mi>
+                                <mi>E</mi>
+                                <mo>=</mo>
+                                <munderover>
+                                    <mo>∑</mo>
+                                    <mrow class="MJX-TeXAtom-ORD">
+                                        <mi>i</mi>
+                                        <mo>=</mo>
+                                        <mn>1</mn>
+                                    </mrow>
+                                    <mi>n</mi>
+                                </munderover>
+                                <mfrac>
+                                    <mrow>
+                                        <mo stretchy="false">(</mo>
+                                        <mi>f</mi>
+                                        <mo stretchy="false">(</mo>
+                                        <msub>
+                                            <mi>x</mi>
+                                            <mi>i</mi>
+                                        </msub>
+                                        <mo stretchy="false">)</mo>
+                                        <mo>−</mo>
+                                        <mi>g</mi>
+                                        <mo stretchy="false">(</mo>
+                                        <msub>
+                                            <mi>x</mi>
+                                            <mi>i</mi>
+                                        </msub>
+                                        <mo stretchy="false">)</mo>
+                                        <msup>
+                                            <mo stretchy="false">)</mo>
+                                            <mn>2</mn>
+                                        </msup>
+                                    </mrow>
+                                    <mi>n</mi>
+                                </mfrac>
+                            </math></span></span></span>
+                <script type="math/tex; mode=display"
+                    id="MathJax-Element-5">MSE = \sum_{i=1}^n \frac{(f(x_i) - g(x_i))^2}{n}</script> where <span
+                    class="MathJax_Preview" style="color: inherit; display: none;"></span><span
+                    id="MathJax-Element-6-Frame" class="mjx-chtml MathJax_CHTML" tabindex="0"
+                    style="font-size: 120%; position: relative;"
+                    data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msub&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;/msub&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;mo&gt;&amp;#x2026;&lt;/mo&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;"
+                    role="presentation"><span id="MJXc-Node-99" class="mjx-math" aria-hidden="true"><span
+                            id="MJXc-Node-100" class="mjx-mrow"><span id="MJXc-Node-101" class="mjx-msubsup"><span
+                                    class="mjx-base"><span id="MJXc-Node-102" class="mjx-mi"><span
+                                            class="mjx-char MJXc-TeX-math-I"
+                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span><span
+                                    class="mjx-sub"
+                                    style="font-size: 70.7%; vertical-align: -0.212em; padding-right: 0.071em;"><span
+                                        id="MJXc-Node-103" class="mjx-mn" style=""><span
+                                            class="mjx-char MJXc-TeX-main-R"
+                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">1</span></span></span></span><span
+                                id="MJXc-Node-104" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
+                                id="MJXc-Node-105" class="mjx-mo MJXc-space1"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="margin-top: -0.164em; padding-bottom: 0.336em;">…</span></span><span
+                                id="MJXc-Node-106" class="mjx-mo MJXc-space1"><span class="mjx-char MJXc-TeX-main-R"
+                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
+                                id="MJXc-Node-107" class="mjx-msubsup MJXc-space1"><span class="mjx-base"><span
+                                        id="MJXc-Node-108" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
+                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span><span
+                                    class="mjx-sub"
+                                    style="font-size: 70.7%; vertical-align: -0.212em; padding-right: 0.071em;"><span
+                                        id="MJXc-Node-109" class="mjx-mi" style=""><span
+                                            class="mjx-char MJXc-TeX-math-I"
+                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">n</span></span></span></span></span></span><span
+                        class="MJX_Assistive_MathML" role="presentation"><math
+                            xmlns="http://www.w3.org/1998/Math/MathML">
+                            <msub>
+                                <mi>x</mi>
+                                <mn>1</mn>
+                            </msub>
+                            <mo>,</mo>
+                            <mo>…</mo>
+                            <mo>,</mo>
+                            <msub>
+                                <mi>x</mi>
+                                <mi>n</mi>
+                            </msub>
+                        </math></span></span>
+                <script type="math/tex" id="MathJax-Element-6">x_1, \ldots, x_n</script> is a recording of <span
+                    class="MathJax_Preview" style="color: inherit; display: none;"></span><span
+                    id="MathJax-Element-7-Frame" class="mjx-chtml MathJax_CHTML" tabindex="0"
+                    style="font-size: 120%; position: relative;"
+                    data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/math&gt;"
+                    role="presentation"><span id="MJXc-Node-110" class="mjx-math" aria-hidden="true"><span
+                            id="MJXc-Node-111" class="mjx-mrow"><span id="MJXc-Node-112" class="mjx-mi"><span
+                                    class="mjx-char MJXc-TeX-math-I"
+                                    style="padding-top: 0.225em; padding-bottom: 0.281em;">n</span></span></span></span><span
+                        class="MJX_Assistive_MathML" role="presentation"><math
+                            xmlns="http://www.w3.org/1998/Math/MathML">
+                            <mi>n</mi>
+                        </math></span></span>
+                <script type="math/tex" id="MathJax-Element-7">n</script> samples.</p>
+
+            <p>The actual curve fitting was done using the <a
+                    href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method">Nelder-Mead</a> method, specifically
+                the implementation provided by the Python library <a
+                    href="https://docs.scipy.org/doc/scipy/reference/optimize.minimize-neldermead.html">SciPy</a>.
+                The Nelder-Mead algorithm ran for 10000 iterations for each curve fit,
+                although, as it turned out later, all the solutions converged after just
+                a few hundred iterations. The curves were fitted against the
+                unnormalized data and in each of the two dimensions separately.</p>
+
+            <p>As for the actual computation of the models: as mentioned
+                above, the second-order model can be described by a second-order
+                differential equation and is computed thusly, while the Bang-bang model
+                is computed discretely. This still leaves open the positions and
+                velocities for the Bang-bang model, which still have to be computed from
+                the acceleration, since the model describes only acceleration.</p>
+
+            <p>With several participants and several recordings there were several possible ways to fit the models to
+                the recorded data:</p>
+
+            <ol>
+                <li>fit a single curve to all recordings simultaneously (“Global fit”),</li>
+                <li>fit a separate curve to all recordings for each participant (“Participant fit”),</li>
+                <li>fit a single curve to both dimensions,</li>
+                <li>fit a separate curve to each dimension,</li>
+                <li>various combinations of the above.</li>
+            </ol>
+
+            <p>The table below shows the results of evaluating the above
+                described model fits. From this table we can see that second-order lag
+                is a slightly better fit than either of the two variants of the
+                Bang-bang model, because it has better average, minimum, and maximum MSE
+                values.</p>
+
+            <div class="u-full-width" style="text-align: center">
+                <table class="u-full-width">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="border-bottom: none">Method</th>
+                            <th colspan="3" style="text-align: center; border-bottom: none">Mean Square Error</th>
+                        </tr>
+                        <tr style="border-bottom-style: double">
+                            <th style="padding: 12px 15px; border-right: none">Second-order lag</th>
+                            <th>Bang-bang #1</th>
+                            <th>Bang-bang #2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Global fit</td>
+                            <td>26.635989998630652</td>
+                            <td>54.720994687013544</td>
+                            <td>80.67711129583053</td>
+                        </tr>
+                        <tr>
+                            <td>Global fit, Y dim.</td>
+                            <td>14.875110618636324</td>
+                            <td>17.558755831097063</td>
+                            <td>28.91815901795095</td>
+                        </tr>
+                        <tr>
+                            <td>Global fit, Z dim.</td>
+                            <td title="Maximum" style="font-weight: bold">38.188863084640886</td>
+                            <td title="Maximum" style="font-weight: bold">77.32377491124643</td>
+                            <td title="Maximum" style="font-weight: bold">127.17802726988623</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #1</td>
+                            <td>19.081860048843062</td>
+                            <td>60.35396140539113</td>
+                            <td>62.457394381998576</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #2</td>
+                            <td>27.020837882116854</td>
+                            <td>18.747800238349413</td>
+                            <td>19.332121065258605</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #3</td>
+                            <td>21.70129205680425</td>
+                            <td>9.010335702615716</td>
+                            <td>53.542616510042464</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #4</td>
+                            <td>15.716127508769171</td>
+                            <td>31.337089040717284</td>
+                            <td>68.57468031551522</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #1, Y dim.</td>
+                            <td>6.745250659399827</td>
+                            <td>14.502407210586153</td>
+                            <td>13.859028358666922</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #1, Z dim.</td>
+                            <td>22.011391684683197</td>
+                            <td>76.0747836333582</td>
+                            <td>77.67761831865081</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #2, Y dim.</td>
+                            <td>4.853960562202213</td>
+                            <td>6.260728065878361</td>
+                            <td>7.1400285478227214</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #2, Z dim.</td>
+                            <td>8.030819907285174</td>
+                            <td>17.354767710728044</td>
+                            <td>19.0668007272263</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #3, Y dim.</td>
+                            <td>5.787708256983717</td>
+                            <td>5.838602736390763</td>
+                            <td>25.125148336200496</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #3, Z dim.</td>
+                            <td>12.522904282117349</td>
+                            <td>8.57787722945068</td>
+                            <td>81.9600854242062</td>
+                        </tr>
+                        <tr>
+                            <td>Participant fit, #4, Y dim.</td>
+                            <td title="Minimum" style="font-weight: bold">4.5356324192249176</td>
+                            <td title="Minimum" style="font-weight: bold">5.420070333615882</td>
+                            <td title="Minimum" style="font-weight: bold">9.672902750195671</td>
+                        </tr>
+                        <tr style="border-bottom-style: double">
+                            <td>Participant fit, #4, Z dim.</td>
+                            <td>9.561440897353261</td>
+                            <td>13.55334873284168</td>
+                            <td>124.24135622231033</td>
+                        </tr>
+                        <tr>
+                            <td>Average</td>
+                            <td>15.817945991179389</td>
+                            <td>27.775686497952016</td>
+                            <td>53.294871902784138</td>
+                        </tr>
+                        <tr>
+                            <td>Minimum</td>
+                            <td>4.5356324192249176</td>
+                            <td>5.420070333615882</td>
+                            <td>9.672902750195671</td>
+                        </tr>
+                        <tr>
+                            <td>Maximum</td>
+                            <td>38.188863084640886</td>
+                            <td>77.32377491124643</td>
+                            <td>127.17802726988623</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>The above table is reproduced below as a bar chart to better visualize the gathered data.</p>
+
+            <div class="row" style="text-align: center">
+                <img id="fig11" style="width: 80%" src="index_files/mse.svg">
+                <p>The MSE values of all fit strategies from the table above.</p>
+            </div>
+
+            <h4>Example</h4>
+
+            <p>The following graphs show the various models evaluated for
+                one example recording (third recording of the first participant), which
+                was picked at random. The model fits here follow the strategy of global
+                fit. In these graphs we can see what has been indicated in the table
+                above. Second-order lag is a slightly better fit than Bang-bang&nbsp;#1
+                and Bang-bang&nbsp;#1 in turn is a slightly better fit than
+                Bang-bang&nbsp;#2.</p>
+
+            <h5 class="docs-header" style="text-align: center">Second-order lag</h5>
+            <div class="row">
+                <div class="one-half column category" style="text-align: center">
+                    <img id="fig5" class="u-max-full-width" src="index_files/2oly.svg">
+                    <p>Y dimension.</p>
+                </div>
+                <div class="one-half column category" style="text-align: center">
+                    <img id="fig6" class="u-max-full-width" src="index_files/2olz.svg">
+                    <p>Z dimension.</p>
+                </div>
+            </div>
+
+            <h5 class="docs-header" style="text-align: center">Bang-bang #1</h5>
+            <div class="row">
+                <div class="one-half column category" style="text-align: center">
+                    <img id="fig7" class="u-max-full-width" src="index_files/bb1y.svg">
+                    <p>Y dimension.</p>
+                </div>
+                <div class="one-half column category" style="text-align: center">
+                    <img id="fig8" class="u-max-full-width" src="index_files/bb1z.svg">
+                    <p>Z dimension.</p>
+                </div>
+            </div>
+
+            <h5 class="docs-header" style="text-align: center">Bang-bang #2</h5>
+            <div class="row">
+                <div class="one-half column category" style="text-align: center">
+                    <img id="fig9" class="u-max-full-width" src="index_files/bb2y.svg">
+                    <p>Y dimension.</p>
+                </div>
+                <div class="one-half column category" style="text-align: center">
+                    <img id="fig10" class="u-max-full-width" src="index_files/bb2z.svg">
+                    <p>Z dimension.</p>
+                </div>
+            </div>
+
+            <p>After the analysis was done, the example recording, which can
+                be seen in the graphs above, along with its corresponding second-order
+                lag model, was transferred and played back on a robitic arm. These can
+                be seen in the two videos below. It can be clearly seen that for the
+                second-order lag the head of the robotic arm drops lower but doesn't
+                move forward as much as the example recording. Also, the tail end of the
+                second-order lag curve can be seen at the end of the video (where the
+                head of the robotic arm moves forward and downward a little bit).</p>
+
+            <div class="row">
+                <div class="one-half column category" style="text-align: center;">
+                    <h5 class="docs-header">Recorded movement</h5>
+                    <video class="u-max-full-width" controls="controls">
+                        <source src="index_files/01.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p>One of the recorded movements played back on a robotic arm.</p>
+                </div>
+                <div class="one-half column category" style="text-align: center;">
+                    <h5 class="docs-header">Second-order lag</h5>
+                    <video class="u-max-full-width" controls="controls">
+                        <source src="index_files/02.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <p>The second-order lag version of the same recording played back on a robotic arm.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="docs-section" id="concluson">
+            <h3 class="section-heading">Conclusion</h3>
+
+            <p>This project has shown that the movement of the human arm can
+                be successfully modelled using methods from control theory. The final
+                verdict is that the second-order lag model is cearly superior than the
+                Bang-bang model when it comes to describing the movement of the forearm
+                when grabing an object. The reason for this is largely due to the
+                Bang-bang model accounting only for a forward movement, but not a
+                backward one.</p>
+        </div>
+
+        <div class="docs-section" id="futurework">
+            <h3 class="section-heading">Future Work</h3>
+
+            <p>In the future, there are several things that can be done to expand on this project:</p>
+
+            <ol>
+                <li>Several more models can tested for how well they describe the arm movement used in this project.
+                    Müller et al.<a href="#1">[1]</a>,
+                    for example, have used McRuer’s Crossover and Costello’s Surge in
+                    addition to second-order lag and Bang-bang, making these two the most
+                    likely future candidates.</li>
+
+                <li>The accuracy could be improved. Meaning, for one a
+                    camera which can record at more than 100Hz could be used, but also one
+                    which records at a better quality (i.e., does not drop the recording as
+                    often and does not produce as many outliers).</li>
+
+                <li>A better robotic arm could be used, ideally one where
+                    there is a corresponding forearm and upperarm, which both replicate the
+                    movement of their respective human counterpart, so that, in the end, if
+                    both were recorded going through the same motions, the video recordings
+                    could be superimposed onto each other.</li>
+
+                <li>Which was alluded to in the previous point: instead of
+                    analyzing the movement of just the forearm, one could analyze the
+                    movement of the whole arm (i.e., including the upperarm). The movement
+                    looked at in this project, with the participant's elbow fixed to the
+                    desktop, is quite artifical and does barely relate to the natural
+                    movements of a human arm.</li>
+
+                <li>This project only considered translation, but ignored
+                    rotation in space. Rotation could be analyzed as well, either separately
+                    from rotation or, depenending on the availability of appropriate
+                    models, together with translation.</li>
+
+                <li>The next obvious step would be the analyze not only
+                    motion in 2D but in 3D, which would be the easiest extension. Looking
+                    the data recorded in this project, the behavior of the third dimension
+                    (X), which was left out here, looks quite similar to the other two
+                    dimensions (on a purely visual basis). Presumably, such an analysis
+                    would come to the same conclusion drawn in this project.</li>
+            </ol>
+        </div>
+
+        <div class="docs-section" id="references">
+            <h3 class="section-heading">References</h3>
+            <ul class="popover-list">
+                <li class="popover-item" id="1">
+                    [1] Müller, J., Oulasvirta, A., &amp; Murray-Smith, R.
+                    (2017). Control theoretic models of pointing. ACM Transactions on
+                    Computer-Human Interaction (TOCHI), 24(4), 27.
+                </li>
+
+                <li class="popover-item" id="2">
+                    [2] Jagacinski, R. J., &amp; Flach, J. M. (2003).
+                    Control Theory for Humans: Quantitative Approaches to Modeling
+                    Performance. CRC Press
+                </li>
+
+            </ul>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
