@@ -1431,12 +1431,6 @@
 
 <body>
     <div id="MathJax_Message" style="display: none;"></div>
-    <!--[if lt IE 7]>
-<p class="browsehappy">You are using an 
-    <strong>outdated</strong> browser. Please 
-    <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
-</p>
-<![endif]-->
     <div class="container">
 
         <nav class="navbar">
@@ -1468,912 +1462,310 @@
         </nav>
 
         <section class="header" id="intro">
-            <h2 class="title">Robotic Arm Control Models of Grasping</h2>
-            <h6>Project by Maurice Quennet (<a
-                    href="mailto:maurice.quennet@campus.tu-berlin.de">maurice.quennet@campus.tu-berlin.de</a>)
+            <h2 class="title">Patchmatch Applied to Physically Based Rendering</h2>
+            <h6>Project by Tim Stullich (<a href="mailto:stullich@campus.tu-berlin.de">stullich@campus.tu-berlin.de</a>)
             </h6>
 
             <div class="row">
-                <p>This project analyzes the movement of the human
-                    arm when grasping objects using two models from control theory:
-                    second-order lag&nbsp;(2OL) and Bang-bang. These models are compared
-                    against recorded movements by four participants for model fit. The best
-                    fitting model is then implemented on a robotic arm (<a
-                        href="https://www.ufactory.cc/#/en/uarmswift">uARM Swift Pro</a>) along with a matching
-                    recording both to visualize the model fit and to highlight the results of this project.</p>
+                <p>This project explored the use of the Patchmatch algorithm, which is typically used in image editing
+                    software, to try and speed up the processing time of rendering complex scenes with a pathtracer.
+                    Physically based rendering techniques, path tracing being one of them, are often quite resource
+                    intensive and require a lot of time to converge to a desired output, therefore finding useful
+                    optimizations in this space are highly sought after.
+                </p>
             </div>
         </section>
 
-
         <div class="docs-section" id="background">
             <h3 class="section-heading">Background</h3>
-            <p class="section-description">Müller et al.&nbsp;<a href="#1">[1]</a>
-                have suggested that traditional models of human-machine interaction,
-                such as Fitts’ Law, while not (necessarily) incorrect, are definitely
-                incomplete. Models, such as Fitts’ Law, describe only the end result of
-                human-machine interaction (i.e., interaction time and probability of
-                success), but do not describe the process of interaction itself. Müller
-                et al. seek to reintroduce control theory, which was once “at the core
-                of the subject,”&nbsp;<a href="#1">[1]</a> but has long since dwindled
-                in popularity, to the study of human-machine interaction. The often
-                actually-not-so-new models of control theory are intended not to replace
-                but to complement traditional models, such as Fitts’ Law.</p>
+            <p class="section-description">Physically based rendering (PBR) techniques have been around for quite some
+                and have seen heavy use in the VFX industry and other domains where photorealistic imagery is required.
+                Although the underlying principles of PBR are quite intuitive and often simplistic, actual
+                implementations
+                of these algorithms often require a large amount of computing resources (CPU, RAM, etc.) in order to
+                produce an output that looks photorealistic. One factor that contributes to this problem is that many
+                samples per pixel need
+                to be computed and many light transport calculations need to be done for the image to converge.
 
-            <p class="section-description">This project builds on the work
-                of Müller et al. in that it tries to model human behaviour using control
-                theory. While Müller et al. modelled one-dimensional pointing dynamics,
-                this project will model the movement of the human arm when grasping
-                objects in two dimensions. Furthermore, two of the models used by Müller
-                et al., second-order lag and Bang-bang, will be used for this analysis
-                (while the other two, Costello’s Surge and McRuer’s Crossover, will
-                not).</p>
+                <h5>Path Tracing</h5>
+                <p>
+                    Path tracing is one of many different algorithms which can be used to render a three-dimensional
+                    scene.
+                    It is based on integrating over all of the illuminance which arrives at a single point of a surface.
+                    This is done by casting rays from the position of a single pixel into a scene and determing if the
+                    ray makes any intersections with the surface of an object modeled in the scene.
+                    Once an intersection between a light ray and an object has been detected, the algorithm then
+                    calculates a reflectance ray through the use of a Bidirectional Reflectance Distribution Function
+                    (BRDF) to
+                    determine further light contributions from other light sources within the scene.
+                    To simulate the randomized nature of a light ray, a path tracer uses Monte Carlo randomization
+                    within a BRDF.
+                    Although this is an effective method for simulating real-world interactions between light and
+                    physical objects, the randomized nature of the algorithm leads to problems when not enough samples
+                    are taken for a given pixel.
+                </p>
 
-            <h5>Control theory</h5>
-
-            <p>Control theory has been around in other disciplines for quite
-                some time, such as electrical engineering, where it has been used to,
-                for example, analyze the behaviour of electric circuits. <em>Manual</em> control theory, specifically,
-                seeks to apply these techniques to “model the interaction of humans with machines.”&nbsp;<a
-                    href="#1">[1]</a></p>
-
-            <p>The most important concept in control theory is that of a <em>closed-loop system</em> or
-                <em>feedback</em>. In such a system, the output contributes to, or is <em>fed back</em>
-                into, the input of the system. In an electrical circuit, this is
-                directly visible in that a wire of some sort connects input and output
-                of the circuit. This concept can be transfered to human behavior. An
-                example would be a human grasping an object. The human sees the object
-                and evaluates its distance to his arm (input). He then puts an action in
-                motion, i.e., moves his arm (output). This action reduces the distance
-                between the object and his arm, which is then reevaluated by the human
-                and the cycle begins anew. Thus the output (movement of the arm) affects
-                the input (distance between arm and object).</p>
-
-            <div class="u-pull-right" style="text-align: center; width: 50%">
-                <img id="fig1" class="u-max-full-width" src="index_files/block.png">
-                <p>A block diagram of a second-order system.&nbsp;<a href="#2">[2]</a></p>
-            </div>
-
-            <p>In control theory, such systems, as described above, are
-                usually visualized using block diagrams. An example of a block diagram
-                can be seen in <a href="#fig1">Figure&nbsp;1</a>. Such diagrams are more
-                widely know from electrical engineering as circuit diagrams. These
-                diagrams, or at last more general versions of them, can also be used to
-                describe human behavior. Albeit, they provide only a human “interface”
-                to describe feedback systems. To model a feedback system mathematically,
-                different tools are needed. One such tool is differential equations,
-                which can be derived from block diagrams (described in detail in the
-                book “Control Theory for Humans: Quantitative Approaches to Modeling
-                Performance” by Jagacinski and Flach&nbsp;<a href="#2">[2]</a>). For example, the differential equation
-                describing the system pictured in <a href="#fig1">Figure&nbsp;1</a> is <span class="MathJax_Preview"
-                    style="color: inherit; display: none;"></span><span class="mjx-chtml MJXc-display"
-                    style="text-align: center;"><span id="MathJax-Element-1-Frame" class="mjx-chtml MathJax_CHTML"
-                        tabindex="0" style="font-size: 120%; text-align: center; position: relative;"
-                        data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;mi&gt;F&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;&amp;#x2212;&lt;/mo&gt;&lt;mi&gt;k&lt;/mi&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mover&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mo&gt;&amp;#x02D9;&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;&amp;#x2212;&lt;/mo&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mover&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mo&gt;&amp;#x00A8;&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/math&gt;"
-                        role="presentation"><span id="MJXc-Node-1" class="mjx-math" aria-hidden="true"><span
-                                id="MJXc-Node-2" class="mjx-mrow"><span id="MJXc-Node-3" class="mjx-mi"><span
-                                        class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.447em; padding-bottom: 0.281em; padding-right: 0.106em;">F</span></span><span
-                                    id="MJXc-Node-4" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
-                                    id="MJXc-Node-5" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.392em; padding-bottom: 0.281em;">t</span></span><span
-                                    id="MJXc-Node-6" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
-                                    id="MJXc-Node-7" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">−</span></span><span
-                                    id="MJXc-Node-8" class="mjx-mi MJXc-space2"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.447em; padding-bottom: 0.281em;">k</span></span><span
-                                    id="MJXc-Node-9" class="mjx-texatom"><span id="MJXc-Node-10" class="mjx-mrow"><span
-                                            id="MJXc-Node-11" class="mjx-munderover"><span class="mjx-stack"><span
-                                                    class="mjx-over"
-                                                    style="height: 0.17em; padding-bottom: 0.06em; padding-left: 0.064em;"><span
-                                                        id="MJXc-Node-13" class="mjx-mo"
-                                                        style="vertical-align: top;"><span
-                                                            class="mjx-char MJXc-TeX-main-R"
-                                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">˙</span></span></span><span
-                                                    class="mjx-op"><span id="MJXc-Node-12" class="mjx-mi"><span
-                                                            class="mjx-char MJXc-TeX-math-I"
-                                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span></span></span></span></span><span
-                                    id="MJXc-Node-14" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
-                                    id="MJXc-Node-15" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.392em; padding-bottom: 0.281em;">t</span></span><span
-                                    id="MJXc-Node-16" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
-                                    id="MJXc-Node-17" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">−</span></span><span
-                                    id="MJXc-Node-18" class="mjx-mi MJXc-space2"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span><span
-                                    id="MJXc-Node-19" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
-                                    id="MJXc-Node-20" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.392em; padding-bottom: 0.281em;">t</span></span><span
-                                    id="MJXc-Node-21" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
-                                    id="MJXc-Node-22" class="mjx-mo MJXc-space3"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.058em; padding-bottom: 0.336em;">=</span></span><span
-                                    id="MJXc-Node-23" class="mjx-texatom MJXc-space3"><span id="MJXc-Node-24"
-                                        class="mjx-mrow"><span id="MJXc-Node-25" class="mjx-munderover"><span
-                                                class="mjx-stack"><span class="mjx-over"
-                                                    style="height: 0.165em; padding-bottom: 0.06em; padding-left: 0.064em;"><span
-                                                        id="MJXc-Node-27" class="mjx-mo"
-                                                        style="vertical-align: top;"><span
-                                                            class="mjx-char MJXc-TeX-main-R"
-                                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">¨</span></span></span><span
-                                                    class="mjx-op"><span id="MJXc-Node-26" class="mjx-mi"><span
-                                                            class="mjx-char MJXc-TeX-math-I"
-                                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span></span></span></span></span><span
-                                    id="MJXc-Node-28" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
-                                    id="MJXc-Node-29" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.392em; padding-bottom: 0.281em;">t</span></span><span
-                                    id="MJXc-Node-30" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span></span></span><span
-                            class="MJX_Assistive_MathML MJX_Assistive_MathML_Block" role="presentation"><math
-                                xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-                                <mi>F</mi>
-                                <mo stretchy="false">(</mo>
-                                <mi>t</mi>
-                                <mo stretchy="false">)</mo>
-                                <mo>−</mo>
-                                <mi>k</mi>
-                                <mrow class="MJX-TeXAtom-ORD">
-                                    <mover>
-                                        <mi>x</mi>
-                                        <mo>˙</mo>
-                                    </mover>
-                                </mrow>
-                                <mo stretchy="false">(</mo>
-                                <mi>t</mi>
-                                <mo stretchy="false">)</mo>
-                                <mo>−</mo>
-                                <mi>x</mi>
-                                <mo stretchy="false">(</mo>
-                                <mi>t</mi>
-                                <mo stretchy="false">)</mo>
-                                <mo>=</mo>
-                                <mrow class="MJX-TeXAtom-ORD">
-                                    <mover>
-                                        <mi>x</mi>
-                                        <mo>¨</mo>
-                                    </mover>
-                                </mrow>
-                                <mo stretchy="false">(</mo>
-                                <mi>t</mi>
-                                <mo stretchy="false">)</mo>
-                            </math></span></span></span>
-                <script type="math/tex; mode=display"
-                    id="MathJax-Element-1">F(t) - k\dot{x}(t) - x(t) = \ddot{x}(t)</script>
-            </p>
-
-            <h5>Second-order lag</h5>
-
-            <div class="u-pull-left" style="text-align: center; width: 50%">
-                <img id="fig2" class="u-max-full-width" src="index_files/2ol.svg">
-                <p>Step-response of second-order lag.&nbsp;<a href="#2">[2]</a></p>
-            </div>
-
-            <p>Second-order lag (2OL) is a linear time-invariant system (LTI) that is described by the second-order
-                differential equation <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span
-                    class="mjx-chtml MJXc-display" style="text-align: center;"><span id="MathJax-Element-2-Frame"
-                        class="mjx-chtml MathJax_CHTML" tabindex="0"
-                        style="font-size: 120%; text-align: center; position: relative;"
-                        data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;mi&gt;m&lt;/mi&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mover&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;&amp;#x00A8;&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;d&lt;/mi&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mover&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;&amp;#x02D9;&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;k&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mi&gt;u&lt;/mi&gt;&lt;/math&gt;"
-                        role="presentation"><span id="MJXc-Node-31" class="mjx-math" aria-hidden="true"><span
-                                id="MJXc-Node-32" class="mjx-mrow"><span id="MJXc-Node-33" class="mjx-mi"><span
-                                        class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.225em; padding-bottom: 0.281em;">m</span></span><span
-                                    id="MJXc-Node-34" class="mjx-texatom"><span id="MJXc-Node-35" class="mjx-mrow"><span
-                                            id="MJXc-Node-36" class="mjx-munderover"><span class="mjx-stack"><span
-                                                    class="mjx-over"
-                                                    style="height: 0.165em; padding-bottom: 0.06em; padding-left: 0.083em;"><span
-                                                        id="MJXc-Node-38" class="mjx-mo"
-                                                        style="vertical-align: top;"><span
-                                                            class="mjx-char MJXc-TeX-main-R"
-                                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">¨</span></span></span><span
-                                                    class="mjx-op"><span id="MJXc-Node-37" class="mjx-mi"><span
-                                                            class="mjx-char MJXc-TeX-math-I"
-                                                            style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.006em;">y</span></span></span></span></span></span></span><span
-                                    id="MJXc-Node-39" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">+</span></span><span
-                                    id="MJXc-Node-40" class="mjx-mi MJXc-space2"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.447em; padding-bottom: 0.281em; padding-right: 0.003em;">d</span></span><span
-                                    id="MJXc-Node-41" class="mjx-texatom"><span id="MJXc-Node-42" class="mjx-mrow"><span
-                                            id="MJXc-Node-43" class="mjx-munderover"><span class="mjx-stack"><span
-                                                    class="mjx-over"
-                                                    style="height: 0.17em; padding-bottom: 0.06em; padding-left: 0.083em;"><span
-                                                        id="MJXc-Node-45" class="mjx-mo"
-                                                        style="vertical-align: top;"><span
-                                                            class="mjx-char MJXc-TeX-main-R"
-                                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">˙</span></span></span><span
-                                                    class="mjx-op"><span id="MJXc-Node-44" class="mjx-mi"><span
-                                                            class="mjx-char MJXc-TeX-math-I"
-                                                            style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.006em;">y</span></span></span></span></span></span></span><span
-                                    id="MJXc-Node-46" class="mjx-mo MJXc-space2"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">+</span></span><span
-                                    id="MJXc-Node-47" class="mjx-mi MJXc-space2"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.447em; padding-bottom: 0.281em;">k</span></span><span
-                                    id="MJXc-Node-48" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.006em;">y</span></span><span
-                                    id="MJXc-Node-49" class="mjx-mo MJXc-space3"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.058em; padding-bottom: 0.336em;">=</span></span><span
-                                    id="MJXc-Node-50" class="mjx-mi MJXc-space3"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.225em; padding-bottom: 0.281em;">u</span></span></span></span><span
-                            class="MJX_Assistive_MathML MJX_Assistive_MathML_Block" role="presentation"><math
-                                xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-                                <mi>m</mi>
-                                <mrow class="MJX-TeXAtom-ORD">
-                                    <mover>
-                                        <mi>y</mi>
-                                        <mo>¨</mo>
-                                    </mover>
-                                </mrow>
-                                <mo>+</mo>
-                                <mi>d</mi>
-                                <mrow class="MJX-TeXAtom-ORD">
-                                    <mover>
-                                        <mi>y</mi>
-                                        <mo>˙</mo>
-                                    </mover>
-                                </mrow>
-                                <mo>+</mo>
-                                <mi>k</mi>
-                                <mi>y</mi>
-                                <mo>=</mo>
-                                <mi>u</mi>
-                            </math></span></span></span>
-                <script type="math/tex; mode=display" id="MathJax-Element-2">m\ddot{y} + d\dot{y} + ky = u</script>
-                Intuitively, the second-order lag would mean for the example of a human
-                grasping an object that, depending on the dampening factor, the human
-                would miss the target object, because he was going to fast, and then,
-                trying to correct his mistake, would back up and then oscillate back and
-                forth in smaller and smaller motions until he hit the target. If the
-                dampening factor is too strong, i.e., the arm is not accelerated enough,
-                the human would never actually reach the target (if a time limit is
-                set) or would take a very long time to do so.</p>
-
-            <h5>Bang-bang</h5>
-
-            <p>Bang-bang is, as opposed to 2OL, not a linear model. Instead it is a “nonlinear, maximum-effort,
-                minimum-time model.”&nbsp;<a href="#1">[1]</a>
-                In the example of a human grasping an object, the Bang-bang model would
-                describe the movement of the human arm as, first, maximum acceleration
-                and, then, maximum deceleration.&nbsp;<a href="#1">[1]</a> Also, it
-                cannot be described using linear differential equations, as it is
-                possible with 2OL. Fortunately, this does not pose a problem in practice
-                (as described <a href="#results">later</a>).</p>
-
-            <div class="u-pull-right" style="text-align: center; width: 50%">
-                <img id="fig3" class="u-max-full-width" src="index_files/bb.svg">
-                <p>The Bang-bang model at different accelerations.</p>
-            </div>
+                <h5>The Sampling Problem</h5>
+                <p>
+                    As mentioned before, PBR algorithms require many samples per pixel (SPP) to reduce noise that is due
+                    to
+                    random sampling. Empirically we have observed that the rendering time is roughly linearly-bound to
+                    the amount of samples per pixel (SPP) a rendering uses for its final output. This is also a problem
+                    that
+                    has been observed in production within real-world applications. A common solution to this problem is
+                    reduce the numer of samples taken per pixel (<= 32 SPP) and then somehow denoise the image through
+                        the use of reconstruction filters or machine-learning algorithms. Even though reconstruction
+                        filters are easy to implement, they often leave unwanted artifacts in an image, mostly in the
+                        form of blur along edges and machine learning algorithms require good datasets in to perform
+                        </p> <div class="u-pull-right" style="text-align: center; width: 50%; height: 50%">
+                        <img id="fig1" class="u-max-full-width" src="index_files/samples.png">
+                        <p>Renders of the same scene taken at different SPP&nbsp;<a href="#2">[2]</a></p>
         </div>
+        <h5>An Exploitable Observation</h5>
+        <p>Typically a renderer is used in a setting where it needs to produce many </p>
 
-
-        <div class="docs-section" id="setup">
-            <h3 class="section-heading">Setup</h3>
-
-            <p>The setup for recording the arm movements is pictured in <a href="#fig4">Figure&nbsp;4</a>.
-                The recordings were done using several OptiTrack Flex 3 cameras
-                (circled in green in the picture), which record at 100Hz at an image
-                resolution of 640 × 480 Pixels (0.3 MP). The participants were wearing a
-                wristband (circled in blue in the picture). Attached to this wristband
-                are three small plastic spheres, whose position in space were recorded
-                by the cameras. These yield, of course, a triangle in space and thus an
-                orientation. The recorded motion of the participant's arm is indicated
-                in the picture by the red arrow-headed arch. The participant starts out
-                with his forearm raised in a position vertical to the table. During the
-                recording the participant moves his arm foreward to grab and object and
-                then moving it back to the initial position to lift the object. During
-                all this the participant's elbow stays fixed on the table. There were
-                four participants, each recording five movements, yielding twenty
-                recordings in total.</p>
-
-            <div class="u-full-width" style="text-align: center">
-                <img id="fig4" src="index_files/setup.jpg">
-                <p>The recording setup: OptiTrack cameras are circled in
-                    green, the armband is circled in blue, and the movement is described by
-                    the red arch.</p>
-            </div>
-
-            <p>At some points during the recording, the OptiTrack cameras
-                failed to properly record the arm movements. In these cases the position
-                in space was assigned the value of <span class="MathJax_Preview"
-                    style="color: inherit; display: none;"></span><span id="MathJax-Element-3-Frame"
-                    class="mjx-chtml MathJax_CHTML" tabindex="0" style="font-size: 120%; position: relative;"
-                    data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mn&gt;0.0&lt;/mn&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;mn&gt;0.0&lt;/mn&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;mn&gt;0.0&lt;/mn&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/math&gt;"
-                    role="presentation"><span id="MJXc-Node-51" class="mjx-math" aria-hidden="true"><span
-                            id="MJXc-Node-52" class="mjx-mrow"><span id="MJXc-Node-53" class="mjx-mo"><span
-                                    class="mjx-char MJXc-TeX-main-R"
-                                    style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
-                                id="MJXc-Node-54" class="mjx-mn"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="padding-top: 0.392em; padding-bottom: 0.336em;">0.0</span></span><span
-                                id="MJXc-Node-55" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
-                                id="MJXc-Node-56" class="mjx-mn MJXc-space1"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="padding-top: 0.392em; padding-bottom: 0.336em;">0.0</span></span><span
-                                id="MJXc-Node-57" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
-                                id="MJXc-Node-58" class="mjx-mn MJXc-space1"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="padding-top: 0.392em; padding-bottom: 0.336em;">0.0</span></span><span
-                                id="MJXc-Node-59" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span></span></span><span
-                        class="MJX_Assistive_MathML" role="presentation"><math
-                            xmlns="http://www.w3.org/1998/Math/MathML">
-                            <mo stretchy="false">(</mo>
-                            <mn>0.0</mn>
-                            <mo>,</mo>
-                            <mn>0.0</mn>
-                            <mo>,</mo>
-                            <mn>0.0</mn>
-                            <mo stretchy="false">)</mo>
-                        </math></span></span>
-                <script type="math/tex" id="MathJax-Element-3">(0.0, 0.0, 0.0)</script>
-                by the recording software. Because of that, the recordings were cleaned
-                up afterwards in two ways. First, the beginnings and ends were cropped
-                so that only the properly recorded portions of the arm movement
-                remained. Second, in four recordings a few small outliers (but which
-                were clearly and visibly not from natural jitter of the human arm)
-                remained in the otherwise properly recorded portion of the recording.
-                These outliers were each 1–3Hz long and, since they were small in
-                number, were picked out manually and then smoothed out by simply keeping
-                the velocity of the previous two recording points.</p>
-        </div>
-
-        <div class="docs-section" id="results">
-            <h3 class="section-heading">Results</h3>
-
-            <p>As mentioned in the previous section, the arm movement was
-                recorded using a wristband with three plastic spheres attached. As a
-                result, each recording contains three separate motions in space. Since
-                this project analyzes only translation, and not rotation, and to make
-                analysis of the data easier (and quicker), these three separate motion
-                tracks were averaged, i.e., for every single point in time, the recorded
-                position vectors were added and divided by three, resulting a single
-                motion track. Because all three motion tracks describe the same movement
-                (with very little variation), the averaging qualitatively changed the
-                motion very little. Furthermore, only two dimensions,
-                Y&nbsp;(forward/backward) and Z&nbsp;(up/down), of the recorded
-                movements were analyzed.</p>
-
-            <p>Analyzing the data consisted of evaluating the model fitness
-                of both second-order lag and Bang-bang. To measure model fitness, the
-                Mean-Square-Error (MSE) function was used, which is based on the
-                Root-Mean-Square-Error (RMSE) used by Müller et al.<a href="#1">[1]</a> For two functions <span
-                    class="MathJax_Preview" style="color: inherit; display: none;"></span><span
-                    id="MathJax-Element-4-Frame" class="mjx-chtml MathJax_CHTML" tabindex="0"
-                    style="font-size: 120%; position: relative;"
-                    data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;f&lt;/mi&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;mi&gt;g&lt;/mi&gt;&lt;/math&gt;"
-                    role="presentation"><span id="MJXc-Node-60" class="mjx-math" aria-hidden="true"><span
-                            id="MJXc-Node-61" class="mjx-mrow"><span id="MJXc-Node-62" class="mjx-mi"><span
-                                    class="mjx-char MJXc-TeX-math-I"
-                                    style="padding-top: 0.503em; padding-bottom: 0.503em; padding-right: 0.06em;">f</span></span><span
-                                id="MJXc-Node-63" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
-                                id="MJXc-Node-64" class="mjx-mi MJXc-space1"><span class="mjx-char MJXc-TeX-math-I"
-                                    style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.003em;">g</span></span></span></span><span
-                        class="MJX_Assistive_MathML" role="presentation"><math
-                            xmlns="http://www.w3.org/1998/Math/MathML">
-                            <mi>f</mi>
-                            <mo>,</mo>
-                            <mi>g</mi>
-                        </math></span></span>
-                <script type="math/tex" id="MathJax-Element-4">f, g</script> the MSE is calculated by <span
-                    class="MathJax_Preview" style="color: inherit; display: none;"></span><span
-                    class="mjx-chtml MJXc-display" style="text-align: center;"><span id="MathJax-Element-5-Frame"
-                        class="mjx-chtml MathJax_CHTML" tabindex="0"
-                        style="font-size: 120%; text-align: center; position: relative;"
-                        data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;mi&gt;M&lt;/mi&gt;&lt;mi&gt;S&lt;/mi&gt;&lt;mi&gt;E&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;munderover&gt;&lt;mo&gt;&amp;#x2211;&lt;/mo&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;/mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/munderover&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;mi&gt;f&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;&amp;#x2212;&lt;/mo&gt;&lt;mi&gt;g&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;msup&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/msup&gt;&lt;/mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/mfrac&gt;&lt;/math&gt;"
-                        role="presentation"><span id="MJXc-Node-65" class="mjx-math" aria-hidden="true"><span
-                                id="MJXc-Node-66" class="mjx-mrow"><span id="MJXc-Node-67" class="mjx-mi"><span
-                                        class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.447em; padding-bottom: 0.281em; padding-right: 0.081em;">M</span></span><span
-                                    id="MJXc-Node-68" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.503em; padding-bottom: 0.281em; padding-right: 0.032em;">S</span></span><span
-                                    id="MJXc-Node-69" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                        style="padding-top: 0.447em; padding-bottom: 0.281em; padding-right: 0.026em;">E</span></span><span
-                                    id="MJXc-Node-70" class="mjx-mo MJXc-space3"><span class="mjx-char MJXc-TeX-main-R"
-                                        style="padding-top: 0.058em; padding-bottom: 0.336em;">=</span></span><span
-                                    id="MJXc-Node-71" class="mjx-munderover MJXc-space3"><span class="mjx-itable"><span
-                                            class="mjx-row"><span class="mjx-cell"><span class="mjx-stack"><span
-                                                        class="mjx-over"
-                                                        style="font-size: 70.7%; padding-bottom: 0.247em; padding-top: 0.141em; padding-left: 0.721em;"><span
-                                                            id="MJXc-Node-78" class="mjx-mi" style=""><span
-                                                                class="mjx-char MJXc-TeX-math-I"
-                                                                style="padding-top: 0.225em; padding-bottom: 0.281em;">n</span></span></span><span
-                                                        class="mjx-op"><span id="MJXc-Node-72" class="mjx-mo"><span
-                                                                class="mjx-char MJXc-TeX-size2-R"
-                                                                style="padding-top: 0.725em; padding-bottom: 0.725em;">∑</span></span></span></span></span></span><span
-                                            class="mjx-row"><span class="mjx-under"
-                                                style="font-size: 70.7%; padding-top: 0.236em; padding-bottom: 0.141em; padding-left: 0.21em;"><span
-                                                    id="MJXc-Node-73" class="mjx-texatom" style=""><span
-                                                        id="MJXc-Node-74" class="mjx-mrow"><span id="MJXc-Node-75"
-                                                            class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                                                style="padding-top: 0.447em; padding-bottom: 0.281em;">i</span></span><span
-                                                            id="MJXc-Node-76" class="mjx-mo"><span
-                                                                class="mjx-char MJXc-TeX-main-R"
-                                                                style="padding-top: 0.058em; padding-bottom: 0.336em;">=</span></span><span
-                                                            id="MJXc-Node-77" class="mjx-mn"><span
-                                                                class="mjx-char MJXc-TeX-main-R"
-                                                                style="padding-top: 0.392em; padding-bottom: 0.336em;">1</span></span></span></span></span></span></span></span><span
-                                    id="MJXc-Node-79" class="mjx-mfrac MJXc-space1"><span class="mjx-box MJXc-stacked"
-                                        style="width: 6.878em; padding: 0px 0.12em;"><span class="mjx-numerator"
-                                            style="width: 6.878em; top: -1.61em;"><span id="MJXc-Node-80"
-                                                class="mjx-mrow"><span id="MJXc-Node-81" class="mjx-mo"><span
-                                                        class="mjx-char MJXc-TeX-main-R"
-                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
-                                                    id="MJXc-Node-82" class="mjx-mi"><span
-                                                        class="mjx-char MJXc-TeX-math-I"
-                                                        style="padding-top: 0.503em; padding-bottom: 0.503em; padding-right: 0.06em;">f</span></span><span
-                                                    id="MJXc-Node-83" class="mjx-mo"><span
-                                                        class="mjx-char MJXc-TeX-main-R"
-                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
-                                                    id="MJXc-Node-84" class="mjx-msubsup"><span class="mjx-base"><span
-                                                            id="MJXc-Node-85" class="mjx-mi"><span
-                                                                class="mjx-char MJXc-TeX-math-I"
-                                                                style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span><span
-                                                        class="mjx-sub"
-                                                        style="font-size: 70.7%; vertical-align: -0.212em; padding-right: 0.071em;"><span
-                                                            id="MJXc-Node-86" class="mjx-mi" style=""><span
-                                                                class="mjx-char MJXc-TeX-math-I"
-                                                                style="padding-top: 0.447em; padding-bottom: 0.281em;">i</span></span></span></span><span
-                                                    id="MJXc-Node-87" class="mjx-mo"><span
-                                                        class="mjx-char MJXc-TeX-main-R"
-                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
-                                                    id="MJXc-Node-88" class="mjx-mo MJXc-space2"><span
-                                                        class="mjx-char MJXc-TeX-main-R"
-                                                        style="padding-top: 0.281em; padding-bottom: 0.447em;">−</span></span><span
-                                                    id="MJXc-Node-89" class="mjx-mi MJXc-space2"><span
-                                                        class="mjx-char MJXc-TeX-math-I"
-                                                        style="padding-top: 0.225em; padding-bottom: 0.503em; padding-right: 0.003em;">g</span></span><span
-                                                    id="MJXc-Node-90" class="mjx-mo"><span
-                                                        class="mjx-char MJXc-TeX-main-R"
-                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">(</span></span><span
-                                                    id="MJXc-Node-91" class="mjx-msubsup"><span class="mjx-base"><span
-                                                            id="MJXc-Node-92" class="mjx-mi"><span
-                                                                class="mjx-char MJXc-TeX-math-I"
-                                                                style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span><span
-                                                        class="mjx-sub"
-                                                        style="font-size: 70.7%; vertical-align: -0.212em; padding-right: 0.071em;"><span
-                                                            id="MJXc-Node-93" class="mjx-mi" style=""><span
-                                                                class="mjx-char MJXc-TeX-math-I"
-                                                                style="padding-top: 0.447em; padding-bottom: 0.281em;">i</span></span></span></span><span
-                                                    id="MJXc-Node-94" class="mjx-mo"><span
-                                                        class="mjx-char MJXc-TeX-main-R"
-                                                        style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span><span
-                                                    id="MJXc-Node-95" class="mjx-msubsup"><span class="mjx-base"><span
-                                                            id="MJXc-Node-96" class="mjx-mo"><span
-                                                                class="mjx-char MJXc-TeX-main-R"
-                                                                style="padding-top: 0.447em; padding-bottom: 0.614em;">)</span></span></span><span
-                                                        class="mjx-sup"
-                                                        style="font-size: 70.7%; vertical-align: 0.513em; padding-left: 0px; padding-right: 0.071em;"><span
-                                                            id="MJXc-Node-97" class="mjx-mn" style=""><span
-                                                                class="mjx-char MJXc-TeX-main-R"
-                                                                style="padding-top: 0.392em; padding-bottom: 0.336em;">2</span></span></span></span></span></span><span
-                                            class="mjx-denominator" style="width: 6.878em; bottom: -0.722em;"><span
-                                                id="MJXc-Node-98" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                                    style="padding-top: 0.225em; padding-bottom: 0.281em;">n</span></span></span><span
-                                            style="border-bottom: 1.3px solid; top: -0.285em; width: 6.878em;"
-                                            class="mjx-line"></span></span><span
-                                        style="height: 2.332em; vertical-align: -0.722em;"
-                                        class="mjx-vsize"></span></span></span></span><span
-                            class="MJX_Assistive_MathML MJX_Assistive_MathML_Block" role="presentation"><math
-                                xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-                                <mi>M</mi>
-                                <mi>S</mi>
-                                <mi>E</mi>
-                                <mo>=</mo>
-                                <munderover>
-                                    <mo>∑</mo>
-                                    <mrow class="MJX-TeXAtom-ORD">
-                                        <mi>i</mi>
-                                        <mo>=</mo>
-                                        <mn>1</mn>
-                                    </mrow>
-                                    <mi>n</mi>
-                                </munderover>
-                                <mfrac>
-                                    <mrow>
-                                        <mo stretchy="false">(</mo>
-                                        <mi>f</mi>
-                                        <mo stretchy="false">(</mo>
-                                        <msub>
-                                            <mi>x</mi>
-                                            <mi>i</mi>
-                                        </msub>
-                                        <mo stretchy="false">)</mo>
-                                        <mo>−</mo>
-                                        <mi>g</mi>
-                                        <mo stretchy="false">(</mo>
-                                        <msub>
-                                            <mi>x</mi>
-                                            <mi>i</mi>
-                                        </msub>
-                                        <mo stretchy="false">)</mo>
-                                        <msup>
-                                            <mo stretchy="false">)</mo>
-                                            <mn>2</mn>
-                                        </msup>
-                                    </mrow>
-                                    <mi>n</mi>
-                                </mfrac>
-                            </math></span></span></span>
-                <script type="math/tex; mode=display"
-                    id="MathJax-Element-5">MSE = \sum_{i=1}^n \frac{(f(x_i) - g(x_i))^2}{n}</script> where <span
-                    class="MathJax_Preview" style="color: inherit; display: none;"></span><span
-                    id="MathJax-Element-6-Frame" class="mjx-chtml MathJax_CHTML" tabindex="0"
-                    style="font-size: 120%; position: relative;"
-                    data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msub&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;/msub&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;mo&gt;&amp;#x2026;&lt;/mo&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;x&lt;/mi&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;"
-                    role="presentation"><span id="MJXc-Node-99" class="mjx-math" aria-hidden="true"><span
-                            id="MJXc-Node-100" class="mjx-mrow"><span id="MJXc-Node-101" class="mjx-msubsup"><span
-                                    class="mjx-base"><span id="MJXc-Node-102" class="mjx-mi"><span
-                                            class="mjx-char MJXc-TeX-math-I"
-                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span><span
-                                    class="mjx-sub"
-                                    style="font-size: 70.7%; vertical-align: -0.212em; padding-right: 0.071em;"><span
-                                        id="MJXc-Node-103" class="mjx-mn" style=""><span
-                                            class="mjx-char MJXc-TeX-main-R"
-                                            style="padding-top: 0.392em; padding-bottom: 0.336em;">1</span></span></span></span><span
-                                id="MJXc-Node-104" class="mjx-mo"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
-                                id="MJXc-Node-105" class="mjx-mo MJXc-space1"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="margin-top: -0.164em; padding-bottom: 0.336em;">…</span></span><span
-                                id="MJXc-Node-106" class="mjx-mo MJXc-space1"><span class="mjx-char MJXc-TeX-main-R"
-                                    style="margin-top: -0.164em; padding-bottom: 0.558em;">,</span></span><span
-                                id="MJXc-Node-107" class="mjx-msubsup MJXc-space1"><span class="mjx-base"><span
-                                        id="MJXc-Node-108" class="mjx-mi"><span class="mjx-char MJXc-TeX-math-I"
-                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">x</span></span></span><span
-                                    class="mjx-sub"
-                                    style="font-size: 70.7%; vertical-align: -0.212em; padding-right: 0.071em;"><span
-                                        id="MJXc-Node-109" class="mjx-mi" style=""><span
-                                            class="mjx-char MJXc-TeX-math-I"
-                                            style="padding-top: 0.225em; padding-bottom: 0.281em;">n</span></span></span></span></span></span><span
-                        class="MJX_Assistive_MathML" role="presentation"><math
-                            xmlns="http://www.w3.org/1998/Math/MathML">
-                            <msub>
-                                <mi>x</mi>
-                                <mn>1</mn>
-                            </msub>
-                            <mo>,</mo>
-                            <mo>…</mo>
-                            <mo>,</mo>
-                            <msub>
-                                <mi>x</mi>
-                                <mi>n</mi>
-                            </msub>
-                        </math></span></span>
-                <script type="math/tex" id="MathJax-Element-6">x_1, \ldots, x_n</script> is a recording of <span
-                    class="MathJax_Preview" style="color: inherit; display: none;"></span><span
-                    id="MathJax-Element-7-Frame" class="mjx-chtml MathJax_CHTML" tabindex="0"
-                    style="font-size: 120%; position: relative;"
-                    data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/math&gt;"
-                    role="presentation"><span id="MJXc-Node-110" class="mjx-math" aria-hidden="true"><span
-                            id="MJXc-Node-111" class="mjx-mrow"><span id="MJXc-Node-112" class="mjx-mi"><span
-                                    class="mjx-char MJXc-TeX-math-I"
-                                    style="padding-top: 0.225em; padding-bottom: 0.281em;">n</span></span></span></span><span
-                        class="MJX_Assistive_MathML" role="presentation"><math
-                            xmlns="http://www.w3.org/1998/Math/MathML">
-                            <mi>n</mi>
-                        </math></span></span>
-                <script type="math/tex" id="MathJax-Element-7">n</script> samples.</p>
-
-            <p>The actual curve fitting was done using the <a
-                    href="https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method">Nelder-Mead</a> method, specifically
-                the implementation provided by the Python library <a
-                    href="https://docs.scipy.org/doc/scipy/reference/optimize.minimize-neldermead.html">SciPy</a>.
-                The Nelder-Mead algorithm ran for 10000 iterations for each curve fit,
-                although, as it turned out later, all the solutions converged after just
-                a few hundred iterations. The curves were fitted against the
-                unnormalized data and in each of the two dimensions separately.</p>
-
-            <p>As for the actual computation of the models: as mentioned
-                above, the second-order model can be described by a second-order
-                differential equation and is computed thusly, while the Bang-bang model
-                is computed discretely. This still leaves open the positions and
-                velocities for the Bang-bang model, which still have to be computed from
-                the acceleration, since the model describes only acceleration.</p>
-
-            <p>With several participants and several recordings there were several possible ways to fit the models to
-                the recorded data:</p>
-
-            <ol>
-                <li>fit a single curve to all recordings simultaneously (“Global fit”),</li>
-                <li>fit a separate curve to all recordings for each participant (“Participant fit”),</li>
-                <li>fit a single curve to both dimensions,</li>
-                <li>fit a separate curve to each dimension,</li>
-                <li>various combinations of the above.</li>
-            </ol>
-
-            <p>The table below shows the results of evaluating the above
-                described model fits. From this table we can see that second-order lag
-                is a slightly better fit than either of the two variants of the
-                Bang-bang model, because it has better average, minimum, and maximum MSE
-                values.</p>
-
-            <div class="u-full-width" style="text-align: center">
-                <table class="u-full-width">
-                    <thead>
-                        <tr>
-                            <th rowspan="2" style="border-bottom: none">Method</th>
-                            <th colspan="3" style="text-align: center; border-bottom: none">Mean Square Error</th>
-                        </tr>
-                        <tr style="border-bottom-style: double">
-                            <th style="padding: 12px 15px; border-right: none">Second-order lag</th>
-                            <th>Bang-bang #1</th>
-                            <th>Bang-bang #2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Global fit</td>
-                            <td>26.635989998630652</td>
-                            <td>54.720994687013544</td>
-                            <td>80.67711129583053</td>
-                        </tr>
-                        <tr>
-                            <td>Global fit, Y dim.</td>
-                            <td>14.875110618636324</td>
-                            <td>17.558755831097063</td>
-                            <td>28.91815901795095</td>
-                        </tr>
-                        <tr>
-                            <td>Global fit, Z dim.</td>
-                            <td title="Maximum" style="font-weight: bold">38.188863084640886</td>
-                            <td title="Maximum" style="font-weight: bold">77.32377491124643</td>
-                            <td title="Maximum" style="font-weight: bold">127.17802726988623</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #1</td>
-                            <td>19.081860048843062</td>
-                            <td>60.35396140539113</td>
-                            <td>62.457394381998576</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #2</td>
-                            <td>27.020837882116854</td>
-                            <td>18.747800238349413</td>
-                            <td>19.332121065258605</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #3</td>
-                            <td>21.70129205680425</td>
-                            <td>9.010335702615716</td>
-                            <td>53.542616510042464</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #4</td>
-                            <td>15.716127508769171</td>
-                            <td>31.337089040717284</td>
-                            <td>68.57468031551522</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #1, Y dim.</td>
-                            <td>6.745250659399827</td>
-                            <td>14.502407210586153</td>
-                            <td>13.859028358666922</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #1, Z dim.</td>
-                            <td>22.011391684683197</td>
-                            <td>76.0747836333582</td>
-                            <td>77.67761831865081</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #2, Y dim.</td>
-                            <td>4.853960562202213</td>
-                            <td>6.260728065878361</td>
-                            <td>7.1400285478227214</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #2, Z dim.</td>
-                            <td>8.030819907285174</td>
-                            <td>17.354767710728044</td>
-                            <td>19.0668007272263</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #3, Y dim.</td>
-                            <td>5.787708256983717</td>
-                            <td>5.838602736390763</td>
-                            <td>25.125148336200496</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #3, Z dim.</td>
-                            <td>12.522904282117349</td>
-                            <td>8.57787722945068</td>
-                            <td>81.9600854242062</td>
-                        </tr>
-                        <tr>
-                            <td>Participant fit, #4, Y dim.</td>
-                            <td title="Minimum" style="font-weight: bold">4.5356324192249176</td>
-                            <td title="Minimum" style="font-weight: bold">5.420070333615882</td>
-                            <td title="Minimum" style="font-weight: bold">9.672902750195671</td>
-                        </tr>
-                        <tr style="border-bottom-style: double">
-                            <td>Participant fit, #4, Z dim.</td>
-                            <td>9.561440897353261</td>
-                            <td>13.55334873284168</td>
-                            <td>124.24135622231033</td>
-                        </tr>
-                        <tr>
-                            <td>Average</td>
-                            <td>15.817945991179389</td>
-                            <td>27.775686497952016</td>
-                            <td>53.294871902784138</td>
-                        </tr>
-                        <tr>
-                            <td>Minimum</td>
-                            <td>4.5356324192249176</td>
-                            <td>5.420070333615882</td>
-                            <td>9.672902750195671</td>
-                        </tr>
-                        <tr>
-                            <td>Maximum</td>
-                            <td>38.188863084640886</td>
-                            <td>77.32377491124643</td>
-                            <td>127.17802726988623</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <p>The above table is reproduced below as a bar chart to better visualize the gathered data.</p>
-
-            <div class="row" style="text-align: center">
-                <img id="fig11" style="width: 80%" src="index_files/mse.svg">
-                <p>The MSE values of all fit strategies from the table above.</p>
-            </div>
-
-            <h4>Example</h4>
-
-            <p>The following graphs show the various models evaluated for
-                one example recording (third recording of the first participant), which
-                was picked at random. The model fits here follow the strategy of global
-                fit. In these graphs we can see what has been indicated in the table
-                above. Second-order lag is a slightly better fit than Bang-bang&nbsp;#1
-                and Bang-bang&nbsp;#1 in turn is a slightly better fit than
-                Bang-bang&nbsp;#2.</p>
-
-            <h5 class="docs-header" style="text-align: center">Second-order lag</h5>
-            <div class="row">
-                <div class="one-half column category" style="text-align: center">
-                    <img id="fig5" class="u-max-full-width" src="index_files/2oly.svg">
-                    <p>Y dimension.</p>
-                </div>
-                <div class="one-half column category" style="text-align: center">
-                    <img id="fig6" class="u-max-full-width" src="index_files/2olz.svg">
-                    <p>Z dimension.</p>
-                </div>
-            </div>
-
-            <h5 class="docs-header" style="text-align: center">Bang-bang #1</h5>
-            <div class="row">
-                <div class="one-half column category" style="text-align: center">
-                    <img id="fig7" class="u-max-full-width" src="index_files/bb1y.svg">
-                    <p>Y dimension.</p>
-                </div>
-                <div class="one-half column category" style="text-align: center">
-                    <img id="fig8" class="u-max-full-width" src="index_files/bb1z.svg">
-                    <p>Z dimension.</p>
-                </div>
-            </div>
-
-            <h5 class="docs-header" style="text-align: center">Bang-bang #2</h5>
-            <div class="row">
-                <div class="one-half column category" style="text-align: center">
-                    <img id="fig9" class="u-max-full-width" src="index_files/bb2y.svg">
-                    <p>Y dimension.</p>
-                </div>
-                <div class="one-half column category" style="text-align: center">
-                    <img id="fig10" class="u-max-full-width" src="index_files/bb2z.svg">
-                    <p>Z dimension.</p>
-                </div>
-            </div>
-
-            <p>After the analysis was done, the example recording, which can
-                be seen in the graphs above, along with its corresponding second-order
-                lag model, was transferred and played back on a robitic arm. These can
-                be seen in the two videos below. It can be clearly seen that for the
-                second-order lag the head of the robotic arm drops lower but doesn't
-                move forward as much as the example recording. Also, the tail end of the
-                second-order lag curve can be seen at the end of the video (where the
-                head of the robotic arm moves forward and downward a little bit).</p>
-
-            <div class="row">
-                <div class="one-half column category" style="text-align: center;">
-                    <h5 class="docs-header">Recorded movement</h5>
-                    <video class="u-max-full-width" controls="controls">
-                        <source src="index_files/01.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    <p>One of the recorded movements played back on a robotic arm.</p>
-                </div>
-                <div class="one-half column category" style="text-align: center;">
-                    <h5 class="docs-header">Second-order lag</h5>
-                    <video class="u-max-full-width" controls="controls">
-                        <source src="index_files/02.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    <p>The second-order lag version of the same recording played back on a robotic arm.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="docs-section" id="concluson">
-            <h3 class="section-heading">Conclusion</h3>
-
-            <p>This project has shown that the movement of the human arm can
-                be successfully modelled using methods from control theory. The final
-                verdict is that the second-order lag model is cearly superior than the
-                Bang-bang model when it comes to describing the movement of the forearm
-                when grabing an object. The reason for this is largely due to the
-                Bang-bang model accounting only for a forward movement, but not a
-                backward one.</p>
-        </div>
-
-        <div class="docs-section" id="futurework">
-            <h3 class="section-heading">Future Work</h3>
-
-            <p>In the future, there are several things that can be done to expand on this project:</p>
-
-            <ol>
-                <li>Several more models can tested for how well they describe the arm movement used in this project.
-                    Müller et al.<a href="#1">[1]</a>,
-                    for example, have used McRuer’s Crossover and Costello’s Surge in
-                    addition to second-order lag and Bang-bang, making these two the most
-                    likely future candidates.</li>
-
-                <li>The accuracy could be improved. Meaning, for one a
-                    camera which can record at more than 100Hz could be used, but also one
-                    which records at a better quality (i.e., does not drop the recording as
-                    often and does not produce as many outliers).</li>
-
-                <li>A better robotic arm could be used, ideally one where
-                    there is a corresponding forearm and upperarm, which both replicate the
-                    movement of their respective human counterpart, so that, in the end, if
-                    both were recorded going through the same motions, the video recordings
-                    could be superimposed onto each other.</li>
-
-                <li>Which was alluded to in the previous point: instead of
-                    analyzing the movement of just the forearm, one could analyze the
-                    movement of the whole arm (i.e., including the upperarm). The movement
-                    looked at in this project, with the participant's elbow fixed to the
-                    desktop, is quite artifical and does barely relate to the natural
-                    movements of a human arm.</li>
-
-                <li>This project only considered translation, but ignored
-                    rotation in space. Rotation could be analyzed as well, either separately
-                    from rotation or, depenending on the availability of appropriate
-                    models, together with translation.</li>
-
-                <li>The next obvious step would be the analyze not only
-                    motion in 2D but in 3D, which would be the easiest extension. Looking
-                    the data recorded in this project, the behavior of the third dimension
-                    (X), which was left out here, looks quite similar to the other two
-                    dimensions (on a purely visual basis). Presumably, such an analysis
-                    would come to the same conclusion drawn in this project.</li>
-            </ol>
-        </div>
-
-        <div class="docs-section" id="references">
-            <h3 class="section-heading">References</h3>
-            <ul class="popover-list">
-                <li class="popover-item" id="1">
-                    [1] Müller, J., Oulasvirta, A., &amp; Murray-Smith, R.
-                    (2017). Control theoretic models of pointing. ACM Transactions on
-                    Computer-Human Interaction (TOCHI), 24(4), 27.
-                </li>
-
-                <li class="popover-item" id="2">
-                    [2] Jagacinski, R. J., &amp; Flach, J. M. (2003).
-                    Control Theory for Humans: Quantitative Approaches to Modeling
-                    Performance. CRC Press
-                </li>
-
-            </ul>
-        </div>
-
+        <h5>PatchMatch</h5>
+        <p>
+            PatchMatch is a an algorithm that quickly finds correspondences within square regions (patches) of
+            an image. Typically used in image editing software for object removal and moving content within an
+            image, PatchMatch has found other applications outside of the image editing domain. PatchMatch
+            accomplishes fast searches by creating a so-called <i>Nearest Neighbor Field</i> which is a
+            mapping of all possible pixel offsets from an image A into the neighboring image B.
+            The distance or offset of a patch is calculated by a distance function and is then stored in the
+            NNF.
+            The function that is used in the standard implementation of PatchMatch to measure distance is
+            <math>
+                <mrow>
+                    <mi>f</mi>
+                    <mfenced>
+                        <mi>a</mi>
+                    </mfenced>
+                    <mo>=</mo>
+                    <mrow>
+                        <mi>b</mi>
+                        <mo>-</mo>
+                        <mi>a</mi>
+                    </mrow>
+                </mrow>
+            </math>
+            where <i>a</i> is the patch coordinate in image A and <i>b</i> is the coordinate of the nearest
+            neighbor in image B.
+        </p>
+        <p>
+            The authors of PatchMatch state in their work that it is possible to swap out the given distance
+            function for more robust variants. This fact gives us an opportunity to explore if we can apply
+            PatchMatch to our work.
+        </p>
     </div>
 
+
+    <div class="docs-section" id="setup">
+        <h3 class="section-heading">Setup</h3>
+        <p>In order to test if PatchMatch is suitable for improving rendering performance we need to have the
+            following things:
+            <ol>
+                <li>Data to run Patchmatch over</li>
+                <li>Distance functions which can be applied to our sampled data</li>
+            </ol>
+
+            <h5>The Mitsuba Renderer</h5>
+            <p>The Mitsuba Renderer <a href="#3">[3]</a> is a research-oriented renderer which takes a lot of
+                inspiration from <i>Phyisally Based Rendering</i> <a href="#4">[4]</a> a book by Matt Phat et. al. Due
+                to its ease-of-use
+                and it being open source, this renderer was used in order to produce the data that was used to
+                evaluate PatchMatch. As a simple baseline, the Cornell Box example from Mitsuba's website served as the
+                baseline to produce various
+                data dumps taken at 16, 32, and 1024 SPP. The code of the renderer had to be modified to able
+                to produce these data dumps. Each dump consisted of the RGBA color values as well as the x and y
+                coordinates of a taken sample encoded in binary format. Reference images at the same SPP were also
+                produced so that PatchMatch could work properly.
+            </p>
+
+            <h5>Distance Functions</h5>
+            <p>We need to find a suitable distance to compare the color values in our reconstructed image against
+                the randomly sampled data that is produced from our renderer. One way to do this is to treat the data
+                in the render dump as a random distribution in which we want to find a small subset which matches a
+                build two
+                histograms consisting of the grayvalues of a) the selected, one from the
+            </p>
+            <h6>Angular Distance</h6>
+            <p>The angular distance between two histograms is defined as follows:</p>
+            <math>
+                <mrow>
+                    <mi>dist</mi>
+                    <mfenced>
+                        <mi>A</mi>
+                        <mi>B</mi>
+                    </mfenced>
+                    <mo>=</mo>
+                    <mrow>
+                        <mi>1</mi>
+                        <mo>-</mo>
+                        <mfrac>
+                            <mrow>
+                                <mi>1</mi>
+                            </mrow>
+                            <mrow>
+                                <mi>2</mi>
+                            </mrow>
+                        </mfrac>
+                        <mfenced>
+                            <mfenced open="<" close=">">
+                                <mfrac>
+                                    <mrow>
+                                        <mi>A</mi>
+                                    </mrow>
+                                    <mrow>
+                                        <mi>||A||</mi>
+                                    </mrow>
+                                </mfrac>
+                                <mfrac>
+                                    <mrow>
+                                        <mi>B</mi>
+                                    </mrow>
+                                    <mrow>
+                                        <mi>||B||</mi>
+                                    </mrow>
+                                </mfrac>
+                            </mfenced>
+                            <mrow>
+                                <mo>+</mo>
+                                <mi>1</mi>
+                            </mrow>
+                        </mfenced>
+                    </mrow>
+                </mrow>
+            </math>
+            <p>
+                Where <i>A</i> and <i>B</i> are histograms consisting of the randomly sampled pixels respectively.
+            </p>
+
+            <h6>Earth Mover's Distance</h6>
+            <p>The Earth Mover's Distance, also called Wasserstein Metric, is often used in order to
+                compare similarities between randomly sampled distributions. Here the randomly sampled
+                distributions are the histograms. Since we have a special case here where our distribution
+                consists of 1-dimensional buckets the Earth Mover's Distance can be defined as:
+            </p>
+            <div>
+                <math>
+                    <mrow>
+                        <msub>
+                            <mi>EMD</mi>
+                            <mi>0</mi>
+                        </msub>
+                        <mo>=</mo>
+                        <mi>0</mi>
+                    </mrow>
+                </math>
+            </div>
+            <div>
+                <math display='inline'>
+                    <mrow>
+                        <msub>
+                            <mi>EMD</mi>
+                            <mi>i+1</mi>
+                        </msub>
+                        <mo>=</mo>
+                        <msub>
+                            <mi>A</mi>
+                            <mi>i</mi>
+                        </msub>
+                        <mo>+</mo>
+                        <msub>
+                            <mi>EMD</mi>
+                            <mi>i</mi>
+                        </msub>
+                        <mo>-</mo>
+                        <msub>
+                            <mi>B</mi>
+                            <mi>i</mi>
+                        </msub>
+                    </mrow>
+                </math>
+            </div>
+            <div>
+                <math>
+                    <mrow>
+                        <mi>EMD</mi>
+                        <mo>=</mo>
+                        <munderover>
+                            <mo>&sum;</mo>
+                            <mrow>
+                                <mi>i</mi>
+                                <mo>=</mo>
+                                <mn>0</mn>
+                            </mrow>
+                            <mi>n</mi>
+                        </munderover>
+                        <mrow>
+                            <mfenced open="||" close="||">
+                                <msub>
+                                    <mi>EMD</mi>
+                                    <mi>i</mi>
+                                </msub>
+                            </mfenced>
+                        </mrow>
+                    </mrow>
+                </math>
+            </div>
+            <p>
+                adadadadad
+            </p>
+
+            <h5>Testing</h5>
+            <p>
+                Section describing Python testing as well as integration into PM example
+            </p>
+    </div>
+
+    <div class="docs-section" id="Results">
+        <h3 class="section-heading">Results</h3>
+        <p>Describe results here</p>
+    </div>
+
+    <div class="docs-section" id="concluson">
+        <h3 class="section-heading">Conclusion</h3>
+
+        <p>This project has shown that although it is feasible, the application of the PatchMatch algorithm
+            to PBR techniques might not be the best idea.
+        </p>
+    </div>
+
+    <div class="docs-section" id="futurework">
+        <h3 class="section-heading">Future Work</h3>
+
+        <p>In the future, there are several things that can be done to expand on this project:</p>
+
+        <ol>
+            <li>Different PBR algorithms could be used to see if they would benefit from having PatchMatch
+                applied to their runtime.
+            </li>
+            <li>Integrating the algorithm into an actual renderer (e.g. Mitsuba). The prototype runs on a
+                barebones environment with precomputed sample dumps.
+            </li>
+        </ol>
+    </div>
+
+    <div class="docs-section" id="references">
+        <h3 class="section-heading">References</h3>
+        <ul class="popover-list">
+            <li class="popover-item" id="1">
+                [1] Barnes C., Shechtman E., Finkelstein A. and Goldman D.
+                (2009). PatchMatch: A Randomized Correspondence Algorithm for
+                Structural Image Editing. ACM Transactions on Graphics (Proc. SIGGRAPH), 28(3).
+            </li>
+            <li class="popover-item" id="2">
+                [2] https://en.wikipedia.org/wiki/Path_tracing
+            </li>
+            <li class="popover-item" id="3">
+                [3] https://www.mitsuba-renderer.org/
+            </li>
+            <li class="popover-item" id="4">
+                [4] http://www.pbr-book.org/
+            </li>
+        </ul>
+    </div>
+    </div>
 </body>
 
 </html>
