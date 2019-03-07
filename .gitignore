@@ -3,3 +3,6 @@
 cmake*
 .idea/
 .ipynb_checkpoints/
+a.out
+.vscode/
+build/
