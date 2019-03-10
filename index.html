@@ -1480,360 +1480,538 @@
             <h3 class="section-heading">Background</h3>
             <p class="section-description">Physically based rendering (PBR) techniques have been around for quite some
                 and have seen heavy use in the VFX industry and other domains where photorealistic imagery is required.
-                Although the underlying principles of PBR are quite intuitive and often simplistic, actual
+                Although the underlying principles of PBR are quite intuitive and mostly simplistic, actual
                 implementations
                 of these algorithms often require a large amount of computing resources (CPU, RAM, etc.) in order to
                 produce an output that looks photorealistic. One factor that contributes to this problem is that many
                 samples per pixel need
-                to be computed and many light transport calculations need to be done for the image to converge.
-
-                <h5>Path Tracing</h5>
-                <p>
-                    Path tracing is one of many different algorithms which can be used to render a three-dimensional
-                    scene.
-                    It is based on integrating over all of the illuminance which arrives at a single point of a surface.
-                    This is done by casting rays from the position of a single pixel into a scene and determing if the
-                    ray makes any intersections with the surface of an object modeled in the scene.
-                    Once an intersection between a light ray and an object has been detected, the algorithm then
-                    calculates a reflectance ray through the use of a Bidirectional Reflectance Distribution Function
-                    (BRDF) to
-                    determine further light contributions from other light sources within the scene.
-                    To simulate the randomized nature of a light ray, a path tracer uses Monte Carlo randomization
-                    within a BRDF.
-                    Although this is an effective method for simulating real-world interactions between light and
-                    physical objects, the randomized nature of the algorithm leads to problems when not enough samples
-                    are taken for a given pixel.
-                </p>
-
-                <h5>The Sampling Problem</h5>
-                <p>
-                    As mentioned before, PBR algorithms require many samples per pixel (SPP) to reduce noise that is due
-                    to
-                    random sampling. Empirically we have observed that the rendering time is roughly linearly-bound to
-                    the amount of samples per pixel (SPP) a rendering uses for its final output. This is also a problem
-                    that
-                    has been observed in production within real-world applications. A common solution to this problem is
-                    reduce the numer of samples taken per pixel (<= 32 SPP) and then somehow denoise the image through
-                        the use of reconstruction filters or machine-learning algorithms. Even though reconstruction
-                        filters are easy to implement, they often leave unwanted artifacts in an image, mostly in the
-                        form of blur along edges and machine learning algorithms require good datasets in to perform
-                        </p> <div class="u-pull-right" style="text-align: center; width: 40%; height: 50%">
-                        <img id="fig1" class="u-max-full-width" src="index_files/spp-compare.gif" />
-                        <p>Renders of the same scene taken at different SPP&nbsp;<a href="#2">[2]</a></p>
-        </div>
-        <h5>An Exploitable Observation</h5>
-        <p>A renderer by nature has to produce a large amount of data through sampling, but oftentimes the data that is
-            sampled is static in nature. If we take a look at the image below we can see for example that the data
-            that
-            exists in the background does not change much, even if the camera were to pan around the scene. This
-            invariance
-            of color values, if detected, could be used in order to reduce rendering by taking color values from prior
-            rendering passes and used in place to produce a final output. As a consequence less sampling would need to
-            be done overall if a sequence of images needed to be rendered.
-            <img id="fig2" class="u-max-full-width" src="index_files/chess.png" />
-            <p>A scene from the Pixar short film <i>Gerry's Game</i></p>
-        </p>
-
-        <h5>PatchMatch</h5>
-        <p>
-            PatchMatch is a an algorithm that quickly finds correspondences within square regions (patches) of
-            an image. Typically used in image editing software for object removal and moving content within an
-            image, PatchMatch has found other applications outside of the image editing domain. PatchMatch
-            accomplishes fast searches by creating a so-called <i>Nearest Neighbor Field</i> which is a
-            mapping of all possible pixel offsets from an image A into the neighboring image B.
-            The distance or offset of a patch is calculated by a distance function and is then stored in the
-            NNF.
-            The function that is used in the standard implementation of PatchMatch to measure distance is
-            <math>
-                <mrow>
-                    <mi>f</mi>
-                    <mfenced>
-                        <mi>a</mi>
-                    </mfenced>
-                    <mo>=</mo>
-                    <mrow>
-                        <mi>b</mi>
-                        <mo>-</mo>
-                        <mi>a</mi>
-                    </mrow>
-                </mrow>
-            </math>
-            where <i>a</i> is the patch coordinate in image A and <i>b</i> is the coordinate of the nearest
-            neighbor in image B.
-        </p>
-        <p>
-            The authors of PatchMatch state in their work that it is possible to swap out the given distance
-            function for more robust variants. This fact gives us an opportunity to explore if we can apply
-            PatchMatch to our work.
-        </p>
-    </div>
-
-    <div class="docs-section" id="setup">
-        <h3 class="section-heading">Setup</h3>
-        <p>In order to test if PatchMatch is suitable for improving rendering performance we need to have the
-            following things:
-            <ol>
-                <li>Data to run Patchmatch over</li>
-                <li>Distance functions which can be applied to our sampled data</li>
-            </ol>
-
-            <h5>The Mitsuba Renderer</h5>
-            <p>The Mitsuba Renderer <a href="#3">[3]</a> is a research-oriented renderer which takes a lot of
-                inspiration from <i>Phyisally Based Rendering</i> <a href="#4">[4]</a> a book by Matt Phat et. al. Due
-                to its ease-of-use
-                and it being open source, this renderer was used in order to produce the data that was used to
-                evaluate PatchMatch. As a simple baseline, the Cornell Box example from Mitsuba's website served as the
-                baseline to produce various
-                data dumps taken at 16, 32, and 1024 SPP. The code of the renderer had to be modified to able
-                to produce these data dumps. Each dump consisted of the RGBA color values as well as the x and y
-                coordinates of a taken sample encoded in binary format. Reference images at the same SPP were also
-                produced so that PatchMatch could work properly.
+                to be taken and many light transport calculations need to be done for the image to converge.
             </p>
 
-            <h5>Distance Functions</h5>
-            <p>We need to find a suitable distance function to compare the color values in our reconstructed image
-                against
-                the randomly sampled data that is produced from our renderer. One way to do this is to treat the data
-                in the render dump as a random distribution in which we want to find a small subset and try to match it
-                against the pixel colors in a given neighborhood defined by PatchMatch. Two of these possible functions
-                are going to be described below.
-            </p>
-            <h6>Angular Distance</h6>
-            <p>The angular distance between two histograms is defined as follows:</p>
-            <math>
-                <mrow>
-                    <mi>dist</mi>
-                    <mfenced>
-                        <mi>A</mi>
-                        <mi>B</mi>
-                    </mfenced>
-                    <mo>=</mo>
-                    <mrow>
-                        <mi>1</mi>
-                        <mo>-</mo>
-                        <mfrac>
-                            <mrow>
-                                <mi>1</mi>
-                            </mrow>
-                            <mrow>
-                                <mi>2</mi>
-                            </mrow>
-                        </mfrac>
-                        <mfenced>
-                            <mfenced open="<" close=">">
-                                <mfrac>
-                                    <mrow>
-                                        <mi>A</mi>
-                                    </mrow>
-                                    <mrow>
-                                        <mi>||A||</mi>
-                                    </mrow>
-                                </mfrac>
-                                <mfrac>
-                                    <mrow>
-                                        <mi>B</mi>
-                                    </mrow>
-                                    <mrow>
-                                        <mi>||B||</mi>
-                                    </mrow>
-                                </mfrac>
-                            </mfenced>
-                            <mrow>
-                                <mo>+</mo>
-                                <mi>1</mi>
-                            </mrow>
-                        </mfenced>
-                    </mrow>
-                </mrow>
-            </math>
+            <h5>Path Tracing</h5>
             <p>
-                Where <i>A</i> and <i>B</i> are histograms consisting of the randomly sampled pixels respectively. The
-                output
-                of this function should give us a value between 0 and 1 which indicates how far apart the color
-                distributions
-                of both histograms are. This is done by first taking the dot product of each of the histograms and then
-                normalizing it to bring the final value to a range between 0 and 1. While this might be a simplistic
-                model of the relationship between two histograms, it might be sufficient enough for our case.
+                Path tracing is one of many different algorithms which can be used to render a three-dimensional
+                scene.
+                It is based on integrating over all of the illuminance which arrives at a single point of a surface.
+                This is done by casting rays from the position of a single pixel into a scene and determing if the
+                ray makes any intersections with the surface of an object modeled in the scene.
+                Once an intersection between a light ray and an object has been detected, the algorithm then
+                calculates a reflectance ray through the use of a Bidirectional Reflectance Distribution Function
+                (BRDF) to
+                determine further light contributions from other light sources within the scene.
+                To simulate the randomized nature of a light ray, a path tracer uses Monte Carlo randomization
+                within a BRDF.
+                Although this is an effective method for simulating real-world interactions between light and
+                physical objects, the randomized nature of the algorithm leads to problems when not enough samples
+                are taken for a given pixel.
             </p>
 
-            <h6>Earth Mover's Distance</h6>
-            <p>The Earth Mover's Distance, also called Wasserstein Metric, is often used in order to
-                compare similarities between randomly sampled distributions. Here the randomly sampled
-                distributions are the histograms. Since we have a special case here where our distribution
-                consists of 1-dimensional buckets the Earth Mover's Distance can be defined as:
-            </p>
-            <div>
-                <math>
-                    <mrow>
-                        <msub>
-                            <mi>EMD</mi>
-                            <mi>0</mi>
-                        </msub>
-                        <mo>=</mo>
-                        <mi>0</mi>
-                    </mrow>
-                </math>
-            </div>
-            <div>
-                <math display='inline'>
-                    <mrow>
-                        <msub>
-                            <mi>EMD</mi>
-                            <mi>i+1</mi>
-                        </msub>
-                        <mo>=</mo>
-                        <msub>
-                            <mi>A</mi>
-                            <mi>i</mi>
-                        </msub>
-                        <mo>+</mo>
-                        <msub>
-                            <mi>EMD</mi>
-                            <mi>i</mi>
-                        </msub>
-                        <mo>-</mo>
-                        <msub>
-                            <mi>B</mi>
-                            <mi>i</mi>
-                        </msub>
-                    </mrow>
-                </math>
-            </div>
-            <div>
-                <math>
-                    <mrow>
-                        <mi>EMD</mi>
-                        <mo>=</mo>
-                        <munderover>
-                            <mo>&sum;</mo>
+            <h5>The Sampling Problem</h5>
+            <p>
+                <div class="u-pull-right" style="text-align: center; width: 40%; height: 20%">
+                    <img id="fig1" src="index_files/spp-compare.gif" />
+                    <p>Renders of the same scene taken at different SPP&nbsp;<a href="#2">[2]</a></p>
+                </div>
+                As mentioned before, PBR algorithms require many samples per pixel (SPP) to reduce noise that is due
+                to
+                random sampling. Empirically we have observed that the rendering time is roughly linearly-bound to
+                the amount of samples per pixel (SPP) a rendering uses for its final output. This is also a problem
+                that
+                has been observed in production within real-world applications. A common solution to this problem is
+                reduce the numer of samples taken per pixel (<= 32 SPP) and then somehow denoise the image through the
+                    use of reconstruction filters or machine-learning algorithms. Even though reconstruction filters are
+                    easy to implement, they often leave unwanted artifacts in an image, mostly in the form of blur along
+                    edges and machine learning algorithms require good datasets in to perform well on noisy images
+                    </div> <h5>An Exploitable Observation</h5>
+                    <p>A renderer by nature has to produce a large amount of data through sampling, but oftentimes the
+                        data that is
+                        sampled is static in nature. If we take a look at the image below we can see for example that
+                        the data
+                        that
+                        exists in the background does not change much, even if the camera were to pan around the scene.
+                        This
+                        invariance
+                        of color values, if detected, could be used in order to reduce rendering by taking color values
+                        from prior
+                        rendering passes and used in place to produce a final output. As a consequence less sampling
+                        would need to
+                        be done overall if a sequence of images needed to be rendered.
+                        <img id="fig2" class="u-max-full-width" src="index_files/chess.png" />
+                        <p>A scene from the Pixar short film <i>Gerry's Game</i></p>
+                    </p>
+
+                    <h5>PatchMatch</h5>
+                    <p>
+                        <div class="u-pull-left"
+                            style="text-align: center; width: 40%; height: 20%; padding-right: 0.5cm">
+                            <img id="fig1" class="u-max-full-width" src="index_files/propagation.png" />
+                            <p>Random propagation through PatchMatch</p>
+                        </div>
+                        PatchMatch is a an algorithm that quickly finds correspondences within square regions (patches)
+                        of an image.
+                        Typically used in image editing software for object removal and moving content within
+                        an
+                        image, PatchMatch has found other applications outside of the image editing domain. PatchMatch
+                        accomplishes fast searches by creating a so-called <i>Nearest Neighbor Field</i> which is a
+                        mapping of all possible pixel offsets from an image A into the neighboring image B.
+                        The distance or offset of a patch is calculated by a distance function and is then stored in the
+                        NNF.
+                        The function that is used in the standard implementation of PatchMatch to measure distance is
+                        <math>
                             <mrow>
-                                <mi>i</mi>
+                                <mi>f</mi>
+                                <mfenced>
+                                    <mi>a</mi>
+                                </mfenced>
                                 <mo>=</mo>
-                                <mn>0</mn>
+                                <mrow>
+                                    <mi>b</mi>
+                                    <mo>-</mo>
+                                    <mi>a</mi>
+                                </mrow>
                             </mrow>
-                            <mi>n</mi>
-                        </munderover>
-                        <mrow>
-                            <mfenced open="||" close="||">
-                                <msub>
-                                    <mi>EMD</mi>
-                                    <mi>i</mi>
-                                </msub>
-                            </mfenced>
-                        </mrow>
-                    </mrow>
-                </math>
-            </div>
-            <p>
-                Once again <i>A</i> and <i>B</i> are the histograms and each of the individual buckets of the
-                histograms are consecutively processed according to the above definition. The output of these
-                metrics are going to be floating point values, yet they do not always indi
-            </p>
-
-            <h5>Testing</h5>
-            <h6>Prototyping</h6>
-            <p>
-                The testing that was done can be described in two parts. First, a Jupyter notebook using Python was
-                built in order to test the feasibility of using PatchMatch for PBR rendering. Scripts were written
-                that would do the following things:
-                <ol>
-                    <li>Read in the data from a Mitsuba rendering pass</li>
-                    <li>Perform reconstruction filtering to create an output image</li>
-                    <li>Run an interactive demo for testing the distance functions with the following features:</li>
-                    <ul>
-                        <li>Being able to select a pixel in the reconstructed image</li>
-                        <li>Displaying the selected color pixel and position in the corresponding data dump</li>
-                        <li>Verification of color values between the original image and the low resolution dump</li>
-                    </ul>
-                </ol>
-                The prototype showed that the distance functions had great promise and that both distance functions
-                were able to effectively select pixels that closesly matched that of the reconstructed image.
-                <div class="u-pull-left" style="text-align: center; width: 50%; height: 50%">
-                    <img id="fig1" class="u-max-full-width" src="index_files/python-demo.png" />
-                    <p>Figure depicting the Python demo
+                        </math>
+                        where <i>a</i> is the patch coordinate in image A and <i>b</i> is the coordinate of the nearest
+                        neighbor in image B.
                     </p>
-                </div>
-                <div class="u-pull-right" style="text-align: center; width: 40%; height: 50%">
-                    <img id="fig1" class="u-max-full-width" src="index_files/python-pixel.png" />
-                    <p>Display of the two color values. On the left the original pixel and the left the closest match
+                    <p>
+                        The authors of PatchMatch state in their work that it is possible to swap out the given distance
+                        function for more robust variants. This fact gives us an opportunity to explore if we can apply
+                        PatchMatch to our work.
                     </p>
-                </div>
-                <p>
-                    For the experiments 10 random samples were taken around the position of the clicked pixel within a
-                    20x20 box. For each of the randomly selected pixels a histogram was built and compared against the
-                    color distribution of the initially clicked pixel.
-                </p>
 
-                <h6>C++ Implementation</h6>
-                <p>Once we were confident that the distance functions were going to feasible for using within
-                    PatchMatch,
-                    the code from the python scripts was ported into the example code that was provided by the
-                    authors of the PatchMatch paper. A number of hurdles had to be overcome in order to get a running
-                    solution. One major problem that persisted throughout the implemenation of the code, was the long
-                    runtime. The initial working example code completed its runs within 10 seconds, however, once the
-                    new distance functions replaced the old one, runtimes upwards of 45 minutes. This was obviously an
-                    which had to be solved, but ultimately too much time was taken trying to optimize an issue which
-                    perhaps
-                    could not be fixed easily. The fact that a lot of allocations and deallocations had to be performed
-                    to build the histograms for our distance functions, meant that a lot of overhead was incurred to
-                    make our code run. Some optimizations were done to try and alleviate the slow runtime issue, for
-                    example
-                    by preallocating our array of buckets, but none were effective in making a significant dent in
-                    the long runtimes.
-                </p>
-    </div>
+                    <div class="docs-section" id="setup">
+                        <h3 class="section-heading">Setup</h3>
+                        <p>In order to test if PatchMatch is suitable for improving rendering performance we need to
+                            have the
+                            following things:
+                            <ol>
+                                <li>Data to run Patchmatch over</li>
+                                <li>Distance functions which can be applied to our sampled data</li>
+                            </ol>
 
-    <div class="docs-section" id="Results">
-        <h3 class="section-heading">Results</h3>
-        <p>Describe results here</p>
-    </div>
+                            <h5>The Mitsuba Renderer</h5>
+                            <p>The Mitsuba Renderer <a href="#3">[3]</a> is a research-oriented renderer which takes a
+                                lot of
+                                inspiration from <i>Phyisally Based Rendering</i> <a href="#4">[4]</a> a book by Matt
+                                Phat et. al.
+                                Due
+                                to its ease-of-use
+                                and it being open source, this renderer was used in order to produce the data that was
+                                used to
+                                evaluate PatchMatch. As a simple baseline, the Cornell Box example from Mitsuba's
+                                website served as
+                                the
+                                baseline to produce various
+                                data dumps taken at 16, 32, and 1024 SPP. The code of the renderer had to be modified to
+                                able
+                                to produce these data dumps. Each dump consisted of the RGBA color values as well as the
+                                x and y
+                                coordinates of a taken sample encoded in binary format. Reference images at the same SPP
+                                were also
+                                produced so that PatchMatch could work properly.
+                            </p>
 
-    <div class="docs-section" id="concluson">
-        <h3 class="section-heading">Conclusion</h3>
+                            <h5>Distance Functions</h5>
+                            <p>We need to find a suitable distance function to compare the color values in our
+                                reconstructed image
+                                against
+                                the randomly sampled data that is produced from our renderer. One way to do this is to
+                                treat the
+                                data
+                                in the render dump as a random distribution in which we want to find a small subset and
+                                try to match
+                                it
+                                against the pixel colors in a given neighborhood defined by PatchMatch. Two of these
+                                possible
+                                functions
+                                are going to be described below.
+                            </p>
+                            <h6>Angular Distance</h6>
+                            <p>The angular distance between two histograms is defined as follows:</p>
+                            <div style="padding-bottom: 0.5cm">
+                                <math>
+                                    <mrow>
+                                        <mi>dist</mi>
+                                        <mfenced>
+                                            <mi>A</mi>
+                                            <mi>B</mi>
+                                        </mfenced>
+                                        <mo>=</mo>
+                                        <mrow>
+                                            <mi>1</mi>
+                                            <mo>-</mo>
+                                            <mfrac>
+                                                <mrow>
+                                                    <mi>1</mi>
+                                                </mrow>
+                                                <mrow>
+                                                    <mi>2</mi>
+                                                </mrow>
+                                            </mfrac>
+                                            <mfenced>
+                                                <mfenced open="<" close=">">
+                                                    <mfrac>
+                                                        <mrow>
+                                                            <mi>A</mi>
+                                                        </mrow>
+                                                        <mrow>
+                                                            <mi>||A||</mi>
+                                                        </mrow>
+                                                    </mfrac>
+                                                    <mfrac>
+                                                        <mrow>
+                                                            <mi>B</mi>
+                                                        </mrow>
+                                                        <mrow>
+                                                            <mi>||B||</mi>
+                                                        </mrow>
+                                                    </mfrac>
+                                                </mfenced>
+                                                <mrow>
+                                                    <mo>+</mo>
+                                                    <mi>1</mi>
+                                                </mrow>
+                                            </mfenced>
+                                        </mrow>
+                                    </mrow>
+                                </math>
+                            </div>
+                            <p>
+                                Where <i>A</i> and <i>B</i> are histograms consisting of the randomly sampled pixels
+                                respectively.
+                                The
+                                output
+                                of this function should give us a value between 0 and 1 which indicates how far apart
+                                the color
+                                distributions
+                                of both histograms are. This is done by first taking the dot product of each of the
+                                histograms and
+                                then
+                                normalizing it to bring the final value to a range between 0 and 1. While this might be
+                                a simplistic
+                                model of the relationship between two histograms, it might be sufficient enough for our
+                                case.
+                            </p>
 
-        <p>This project has shown that although it is feasible, the application of the PatchMatch algorithm
-            to PBR techniques might not be the best idea.
-        </p>
-    </div>
+                            <h6>Earth Mover's Distance</h6>
+                            <p>The Earth Mover's Distance, also called Wasserstein Metric, is often used in order to
+                                compare similarities between randomly sampled distributions. Here the randomly sampled
+                                distributions are the histograms. Since we have a special case here where our
+                                distribution
+                                consists of 1-dimensional buckets the Earth Mover's Distance can be defined as:
+                            </p>
+                            <div>
+                                <math>
+                                    <mrow>
+                                        <msub>
+                                            <mi>EMD</mi>
+                                            <mi>0</mi>
+                                        </msub>
+                                        <mo>=</mo>
+                                        <mi>0</mi>
+                                    </mrow>
+                                </math>
+                            </div>
+                            <div>
+                                <math display='inline'>
+                                    <mrow>
+                                        <msub>
+                                            <mi>EMD</mi>
+                                            <mi>i+1</mi>
+                                        </msub>
+                                        <mo>=</mo>
+                                        <msub>
+                                            <mi>A</mi>
+                                            <mi>i</mi>
+                                        </msub>
+                                        <mo>+</mo>
+                                        <msub>
+                                            <mi>EMD</mi>
+                                            <mi>i</mi>
+                                        </msub>
+                                        <mo>-</mo>
+                                        <msub>
+                                            <mi>B</mi>
+                                            <mi>i</mi>
+                                        </msub>
+                                    </mrow>
+                                </math>
+                            </div>
+                            <div style="padding-bottom: 0.5cm">
+                                <math>
+                                    <mrow>
+                                        <mi>EMD</mi>
+                                        <mo>=</mo>
+                                        <munderover>
+                                            <mo>&sum;</mo>
+                                            <mrow>
+                                                <mi>i</mi>
+                                                <mo>=</mo>
+                                                <mn>0</mn>
+                                            </mrow>
+                                            <mi>n</mi>
+                                        </munderover>
+                                        <mrow>
+                                            <mfenced open="||" close="||">
+                                                <msub>
+                                                    <mi>EMD</mi>
+                                                    <mi>i</mi>
+                                                </msub>
+                                            </mfenced>
+                                        </mrow>
+                                    </mrow>
+                                </math>
+                            </div>
+                            <p>
+                                Once again <i>A</i> and <i>B</i> are the histograms and each of the individual buckets
+                                of the
+                                histograms are consecutively processed according to the above definition. The output of
+                                these
+                                metrics are going to be floating point values, yet they do not always indi
+                            </p>
 
-    <div class="docs-section" id="futurework">
-        <h3 class="section-heading">Future Work</h3>
+                            <h5>Testing</h5>
+                            <h6>Prototyping</h6>
+                            <p>
+                                The testing that was done can be split in two parts. First, a Jupyter notebook using
+                                Python was
+                                built in order to test the feasibility of using PatchMatch for PBR rendering. Scripts
+                                were written
+                                that would do the following things:
+                                <ol>
+                                    <li>Read in the data from a Mitsuba rendering pass</li>
+                                    <li>Perform reconstruction filtering to create an output image</li>
+                                    <li>Run an interactive demo for testing the distance functions with the following
+                                        features:</li>
+                                    <ul>
+                                        <li>Being able to select a pixel in the reconstructed image</li>
+                                        <li>Displaying the selected color pixel and position in the corresponding data
+                                            dump</li>
+                                        <li>Verification of color values between the original image and the low
+                                            resolution dump</li>
+                                    </ul>
+                                </ol>
+                                The prototype showed that the distance functions had great promise and that both
+                                distance functions
+                                were able to effectively select pixels that closesly matched that of the reconstructed
+                                image.
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="one-half-column">
+                                            <div class="u-pull-left"
+                                                style="text-align: center; width: 50%; height: 100%">
+                                                <img id="fig3" class="u-max-full-width"
+                                                    src="index_files/python-demo.png" />
+                                                <p>Figure depicting a part of the Python demo
+                                                </p>
+                                            </div>
+                                            <div class="one-half-column">
+                                                <div class="u-pull-right"
+                                                    style="text-align: center; width: 50%; height: 100%">
+                                                    <img id="fig4" class="u-max-full-width"
+                                                        src="index_files/python-pixel.png" />
+                                                    <p>Display of the two color values.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p>
+                                    For the experiments 10 random samples were taken around the position of the clicked
+                                    pixel within
+                                    a
+                                    20x20 box. For each of the randomly selected pixels a histogram was built and
+                                    compared against
+                                    the
+                                    color distribution of the initially clicked pixel.
+                                </p>
 
-        <p>In the future, there are several things that can be done to expand on this project:</p>
+                                <h6>C++ Implementation</h6>
+                                <p>Once we were confident that the distance functions were going to feasible for using
+                                    within
+                                    PatchMatch,
+                                    the code from the python scripts was ported into the example code that was provided
+                                    by the
+                                    authors of the PatchMatch paper. A number of hurdles had to be overcome in order to
+                                    get a
+                                    running
+                                    solution. One major problem that persisted throughout the implemenation of the code,
+                                    was the
+                                    long
+                                    runtime. The initial working example code completed its runs within 10 seconds,
+                                    however, once
+                                    the
+                                    new distance functions replaced the old one, runtimes upwards of 45 minutes. This
+                                    was obviously
+                                    an
+                                    which had to be solved, but ultimately too much time was taken trying to optimize an
+                                    issue which
+                                    perhaps
+                                    could not be fixed easily. The fact that a lot of allocations and deallocations had
+                                    to be
+                                    performed
+                                    to build the histograms for our distance functions, meant that a lot of overhead was
+                                    incurred to
+                                    make our code run. Some optimizations were done to try and alleviate the slow
+                                    runtime issue, for
+                                    example
+                                    by preallocating our array of buckets, but none were effective in making a
+                                    significant dent in
+                                    the long runtimes.
+                                </p>
+                    </div>
 
-        <ol>
-            <li>Different PBR algorithms could be used to see if they would benefit from having PatchMatch
-                applied to their runtime.
-            </li>
-            <li>Testing of different thresholds should be done for each distance function to see how
-                they affect the selection process for an ideal pixel
-            </li>
-            <li>Integrating the algorithm into an actual renderer (e.g. Mitsuba). The prototype runs on a
-                barebones environment with precomputed sample dumps.
-            </li>
-        </ol>
-    </div>
+                    <div class="docs-section" id="Results">
+                        <h3 class="section-heading">Results</h3>
+                        <p>In order for us to verify that PatchMatch works as intended with the new data set and
+                            functions
+                            we need
+                            to have a baseline to compare to. The original publication of the PatchMatch paper had an
+                            example
+                            implementation
+                            to display how the algorithm works, but for our purposes we decided to use our own images
+                            rendered first
+                            through Mitsuba in order to create our baseline. The images and results of that example are
+                            displayed below:
+                            <div class="container">
+                                <div class="row">
+                                    <div class="one-half-column">
+                                        <div class="u-pull-left" style="text-align: center; width: 45%; height: 50%">
+                                            <img id="fig5" class="u-max-full-width" src="index_files/cbox.png" />
+                                            <p>Image displaying the first frame</p>
+                                        </div>
+                                    </div>
+                                    <div class="one-half-column">
+                                        <div class="u-pull-right" style="text-align: center; width: 45%; height: 50%">
+                                            <img id="fig6" class="u-max-full-width" src="index_files/cbox1.png" />
+                                            <p>Image displaying the following frame</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="one-half-column">
+                                            <div class="u-pull-left"
+                                                style="text-align: center; width: 45%; height: 50%">
+                                                <img id="fig5" class="u-max-full-width" src="index_files/nnf.jpg" />
+                                                <p>Resulting PatchMatch NNF</p>
+                                            </div>
+                                        </div>
+                                        <div class="one-half-column">
+                                            <div class="u-pull-right"
+                                                style="text-align: center; width: 45%; height: 50%">
+                                                <img id="fig6" class="u-max-full-width" src="index_files/nnd.jpg" />
+                                                <p>Resulting PatchMatch distance field</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </p>
+                        <p>
+                            The idea now is that if we are able to replicate a result similar to the ones displayed
+                            above,
+                            PatchMatch would be feasible for use in our application. We then went ahead and implemented
+                            the angular distance function into the code and ran our tests. Initially, before any changes
+                            were made to the actual code, PatchMatch completed its runs under 10 seconds. Once our new
+                            distance functions were integrated, this run time increased to over 45 minutes. The output
+                            of these test runs can be seen below.
+                            <div class="container">
+                                <div class="row">
+                                    <div class="one-half-column">
+                                        <div class="u-pull-left" style="text-align: center; width: 45%; height: 50%">
+                                            <img id="fig5" class="u-max-full-width"
+                                                src="index_files/reconstructed_nnf.jpg" />
+                                            <p>PatchMatch NNF using angular distance</p>
+                                        </div>
+                                    </div>
+                                    <div class="one-half-column">
+                                        <div class="u-pull-right" style="text-align: center; width: 45%; height: 50%">
+                                            <img id="fig6" class="u-max-full-width"
+                                                src="index_files/reconstructed_nnd.jpg" />
+                                            <p>PatchMatch NND using angular distance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            As we can see, the
+                        </p>
+                    </div>
 
-    <div class="docs-section" id="references">
-        <h3 class="section-heading">References</h3>
-        <ul class="popover-list">
-            <li class="popover-item" id="1">
-                [1] Barnes C., Shechtman E., Finkelstein A. and Goldman D.
-                (2009). PatchMatch: A Randomized Correspondence Algorithm for
-                Structural Image Editing. ACM Transactions on Graphics (Proc. SIGGRAPH), 28(3).
-            </li>
-            <li class="popover-item" id="2">
-                [2] <a href="https://chunky.llbit.se/path_tracing.html">https://chunky.llbit.se/path_tracing.html</a>
-            </li>
-            <li class="popover-item" id="3">
-                [3] <a href="https://www.mitsuba-renderer.org/">https://www.mitsuba-renderer.org/</a>
-            </li>
-            <li class="popover-item" id="4">
-                [4] <a href="http://www.pbr-book.org/">http://www.pbr-book.org/</a>
-            </li>
-        </ul>
-    </div>
-    </div>
+                    <div class="docs-section" id="concluson">
+                        <h3 class="section-heading">Conclusion</h3>
+
+                        <p>This project has shown that although it is feasible, the application of the PatchMatch
+                            algorithm
+                            to PBR techniques might not be the best idea. The given distance functions do work in theory
+                            as
+                            intended,
+                            yet when they are combined with the PatchMatch algorithm they do not seem to provide the
+                            speedup
+                            that is
+                            required to make it a feasible replacement for current techniques that deal with denoising
+                            rendered images
+                            (machine learning, etc.). One aspect that has not been touched on earlier in this document
+                            is
+                            the fact
+                            that PBR algorithms try to be as unbiased as possible. In our case that means that all
+                            calculations
+                            pertaining to the
+                            evaluation of light contributions should not be influenced by prior knowledge of what the
+                            scene
+                            might look
+                            like. With this fact in mind, even if PatchMatch worked perfectly in correspondence with
+                            rendering images,
+                            it is unlikely that this bias will be removable from the algorithm and therefore less useful
+                            in
+                            real-world
+                            applications.
+                        </p>
+                    </div>
+
+                    <div class="docs-section" id="futurework">
+                        <h3 class="section-heading">Future Work</h3>
+
+                        <p>In the future, there are several things that can be done to expand on this project:</p>
+
+                        <ol>
+                            <li>Different PBR algorithms could be used to see if they would benefit from having
+                                PatchMatch
+                                applied to their runtime.
+                            </li>
+                            <li>Testing of different thresholds should be done for each distance function to see how
+                                they affect the selection process for an ideal pixel
+                            </li>
+                            <li>Integrating the algorithm into an actual renderer (e.g. Mitsuba). The prototype runs on
+                                a
+                                barebones environment with precomputed sample dumps.
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="docs-section" id="references">
+                        <h3 class="section-heading">References</h3>
+                        <ul class="popover-list">
+                            <li class="popover-item" id="1">
+                                [1] Barnes C., Shechtman E., Finkelstein A. and Goldman D.
+                                (2009). PatchMatch: A Randomized Correspondence Algorithm for
+                                Structural Image Editing. ACM Transactions on Graphics (Proc. SIGGRAPH), 28(3).
+                            </li>
+                            <li class="popover-item" id="2">
+                                [2] <a
+                                    href="https://chunky.llbit.se/path_tracing.html">https://chunky.llbit.se/path_tracing.html</a>
+                            </li>
+                            <li class="popover-item" id="3">
+                                [3] <a href="https://www.mitsuba-renderer.org/">https://www.mitsuba-renderer.org/</a>
+                            </li>
+                            <li class="popover-item" id="4">
+                                [4] <a href="http://www.pbr-book.org/">http://www.pbr-book.org/</a>
+                            </li>
+                        </ul>
+                    </div>
+        </div>
 </body>
 
 </html>
