@@ -1467,10 +1467,11 @@
             </h6>
 
             <div class="row">
-                <p>This project explored the use of the Patchmatch algorithm, which is typically used in image editing
+                <p>This project explored the use of the PatchMatch algorithm, which is typically used in image editing
                     software, to try and speed up the processing time of rendering complex scenes with a pathtracer.
-                    Physically based rendering techniques, path tracing being one of them, are often quite resource
-                    intensive and require a lot of time to converge to a desired output, therefore finding useful
+                    Physically based rendering techniques, path tracing being one of them, are often quite
+                    resource-intensive
+                    and require a lot of time to converge to a desired output, therefore finding useful
                     optimizations in this space are highly sought after.
                 </p>
             </div>
@@ -1493,17 +1494,19 @@
                 Path tracing is one of many different algorithms which can be used to render a three-dimensional
                 scene.
                 It is based on integrating over all of the illuminance which arrives at a single point of a surface.
-                This is done by casting rays from the position of a single pixel into a scene and determing if the
-                ray makes any intersections with the surface of an object modeled in the scene.
+                This is done by casting rays from the position of a single pixel into a scene and determining if the
+                ray makes any intersections with the surface of an object contained within the scene.
                 Once an intersection between a light ray and an object has been detected, the algorithm then
                 calculates a reflectance ray through the use of a Bidirectional Reflectance Distribution Function
                 (BRDF) to
-                determine further light contributions from other light sources within the scene.
+                determine further light contributions from other light sources within the scene at the intersection
+                point.
                 To simulate the randomized nature of a light ray, a path tracer uses Monte Carlo randomization
-                within a BRDF.
+                within a BRDF to determine how the light is reflected off of a surface.
                 Although this is an effective method for simulating real-world interactions between light and
                 physical objects, the randomized nature of the algorithm leads to problems when not enough samples
-                are taken for a given pixel.
+                are taken for a given pixel, leading to noisy or grainy output. The natural solution that follows is
+                to increase the number of samples taken in order to reduce the noise.
             </p>
 
             <h5>The Sampling Problem</h5>
@@ -1517,12 +1520,13 @@
                 random sampling. Empirically we have observed that the rendering time is roughly linearly-bound to
                 the amount of samples per pixel (SPP) a rendering uses for its final output. This is also a problem
                 that
-                has been observed in production within real-world applications. A common solution to this problem is
-                reduce the numer of samples taken per pixel (<= 32 SPP) and then somehow denoise the image through the
-                    use of reconstruction filters or machine-learning algorithms. Even though reconstruction filters are
-                    easy to implement, they often leave unwanted artifacts in an image, mostly in the form of blur along
+                has also been observed in production within real-world applications. A common solution to this problem
+                is to
+                reduce the numer of samples taken per pixel (<= 32 SPP) and then denoise the image through the use of
+                    reconstruction filters or machine-learning algorithms. Even though reconstruction filters are easy
+                    to implement, they often leave unwanted artifacts in an image, mostly in the form of blur along
                     edges and machine learning algorithms require good datasets in to perform well on noisy images. <p>
-                    Therefore a perfect solution to denoise images has not been found, but lots of research has been
+                    Therefore, a perfect solution to denoise images has not been found, but lots of research has been
                     going into finding a solution to this problem. In the following section we will introduce an
                     observation
                     that has been made when rendering a series of images, for example when animating a scene in a movie,
@@ -1543,9 +1547,9 @@
                 the scene.
                 This
                 invariance
-                of color values, if detected, could be used in order to reduce rendering by taking color values
+                of color values, if detected, could be used in order to reduce rendering times by taking color values
                 from prior
-                rendering passes and used in place to produce a final output. As a consequence, less sampling
+                rendering passes and swapped in place to produce a final output. As a consequence, less sampling
                 would need to
                 be done overall if a sequence of images needed to be rendered, since a reuse of pixel values could
                 essentially eliminate the need for rendering paths from corresponding patches.
@@ -1602,8 +1606,10 @@
                     <li>Data to run Patchmatch over</li>
                     <li>Distance functions which can be applied to our sampled data</li>
                 </ol>
-                What follows next is a description as to how we obtained data for our experiments and
-                introduce the distance functions that we tried to test.
+                <p>
+                    What follows next is a description as to how we obtained data for our experiments and
+                    introduce the distance functions that we tried to test.
+                </p>
                 <h5>The Mitsuba Renderer</h5>
                 <p>The Mitsuba Renderer <a href="#3">[3]</a> is a research-oriented renderer which takes a
                     lot of
@@ -1925,7 +1931,7 @@
                 the angular distance function into the code and ran our tests. Our tests consisted of two types
                 of input data:
                 <ol>
-                    <li>A reconstructed image sampled at 1042 SPP</li>
+                    <li>A reconstructed image sampled at 1024 SPP</li>
                     <li>A data dump from the next frame which was sampled at 16 SPP</li>
                 </ol>
                 These two inputs were going to be used to evaluate if PatchMatch would find the same patches
@@ -1957,20 +1963,28 @@
                 Even when using different seeds for the random propagation and checking that the code runs
                 as expected, we arrive at the striped output shown above.
             </p>
+            <p>
+                Another concern regarding this methodology is the overhead in time and memory consumption
+                when running this algorithm. The time that is taken to read the data in and transform it
+                to make it useful for the algorithm was exceeding limits that were far from ideal. The data
+                from one dump at 16 SPP was around 550 MB at 500x500 pixels, and scaled linearly with the
+                amount of samples per pixel. If this algorithm were to be used in a real-world renderer
+                we would see those rendering times go up high enough to not be useful at all.
+            </p>
         </div>
 
-        <div class="docs-section" id="concluson">
+        <div class="docs-section" id="conclusion">
             <h3 class="section-heading">Conclusion</h3>
 
             <p>This project has shown that although it is feasible, the application of the PatchMatch
                 algorithm
-                to PBR techniques might not be the best idea. The given distance functions do work in theory
+                to PBR techniques might not be the best idea. The given distance functions do work
                 as
                 intended,
                 yet when they are combined with the PatchMatch algorithm they do not seem to provide the
                 speedup
                 that is
-                required to make it a feasible replacement for current techniques that deal with denoising
+                required to make it a worthwhile replacement for current techniques that deal with denoising
                 rendered images
                 (machine learning, etc.). One aspect that has not been touched on earlier in this document
                 is
@@ -1986,7 +2000,9 @@
                 it is unlikely that this bias will be removable from the algorithm and therefore less useful
                 in
                 real-world
-                applications.
+                applications. Although it might sound like there is not much merit to the usage of PatchMatch
+                in a rendering scenario, further improvements might still make it a viable solution for
+                solving problems that are bounded by sampling issues.
             </p>
         </div>
 
@@ -2001,7 +2017,7 @@
                     applied to their runtime.
                 </li>
                 <li>Testing of different thresholds should be done for each distance function to see how
-                    they affect the selection process for an ideal pixel
+                    they affect the selection process for an ideal pixel.
                 </li>
                 <li>Integrating the algorithm into an actual renderer (e.g. Mitsuba). The prototype runs on
                     a
